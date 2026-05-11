@@ -1,0 +1,25 @@
+{
+    "name": "parc/module-addressvalidation",
+    "description": "Module for validating the address of all incoming orders via Endereco API",
+    "type": "magento2-module",
+    "version": "1.0.1",
+    "license": "GPL-3.0",
+    "authors": [
+        {
+            "name": "Luisa Öchsner",
+            "email": "loechsner@artplants.eu"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "php": "^7.4 || ^8.1"
+    },
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Parc\\AddressValidation\\": ""
+        }
+    }
+}

@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+  <table name="parc_addressvalidation" resource="default" engine="innodb" comment="parc_addressvalidation Table">
+    <column xsi:type="int" name="address_validation_id" padding="10" unsigned="true" nullable="false" identity="true"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="address_validation_id"/>
+    </constraint>
+    <column name="created_at" xsi:type="timestamp" on_update="false" nullable="false" default="CURRENT_TIMESTAMP"/>
+    <column name="order_id" nullable="false" xsi:type="int" identity="false" unsigned="true"/>
+    <column name="order_increment_id" nullable="false" xsi:type="varchar" length="255"/>
+    <column name="orig_zip_code" nullable="true" xsi:type="varchar" comment="original shipping data" length="255"/>
+    <column name="orig_city" nullable="true" xsi:type="varchar" comment="original shipping data" length="255"/>
+    <column name="orig_street_full" nullable="true" xsi:type="varchar" comment="original shipping data" length="255"/>
+    <column name="api_zip_code" nullable="true" xsi:type="varchar" comment="suggestion from api" length="255"/>
+    <column name="api_city" nullable="true" xsi:type="varchar" comment="suggestion from api" length="255"/>
+    <column name="api_street" nullable="true" xsi:type="varchar" comment="suggestion from api" length="255"/>
+    <column name="api_house_number" nullable="true" xsi:type="varchar" comment="suggestion from api" length="255"/>
+    <column name="api_additional_information" nullable="true" xsi:type="text" comment="suggestion from api"/>
+    <column name="status_codes" nullable="true" xsi:type="text" comment="suggestion from api"/>
+    <column name="manu_zip_code" nullable="true" xsi:type="varchar" comment="manual correction" length="255"/>
+    <column name="manu_city" nullable="true" xsi:type="varchar" comment="manual correction" length="255"/>
+    <column name="manu_street" nullable="true" xsi:type="varchar" comment="manual correction" length="255"/>
+    <column name="manu_house_number" nullable="true" xsi:type="varchar" comment="manual correction" length="255"/>
+    <column name="manu_additional_information" nullable="true" xsi:type="text" comment="manual correction"/>
+    <column name="edited_by" nullable="true" xsi:type="text"/>
+    <column name="edited_at" xsi:type="timestamp" nullable="true"/>
+  </table>
+</schema>

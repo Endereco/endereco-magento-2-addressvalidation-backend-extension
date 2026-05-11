@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+
+  <listingToolbar name="listing_top">
+    <massaction name="listing_massaction" component="Magento_Ui/js/grid/tree-massactions">
+      <action name="createaddresscsv">
+        <settings>
+          <url path="addressvalidation/order/createaddresscsv"/>
+          <type>create_address_csv</type>
+          <label translate="true">Create Address CSV</label>
+        </settings>
+      </action>
+    </massaction>
+  </listingToolbar>
+</listing>

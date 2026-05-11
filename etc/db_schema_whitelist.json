@@ -1,0 +1,29 @@
+{
+    "parc_addressvalidation": {
+        "column": {
+            "address_validation_id": true,
+            "created_at": true,
+            "order_id": true,
+            "order_increment_id": true,
+            "api_zip_code": true,
+            "api_city": true,
+            "api_street": true,
+            "api_house_number": true,
+            "api_additional_information": true,
+            "status_codes": true,
+            "manu_zip_code": true,
+            "manu_city": true,
+            "manu_street": true,
+            "manu_house_number": true,
+            "manu_additional_information": true,
+            "edited_by": true,
+            "edited_at": true,
+            "orig_zip_code": true,
+            "orig_city": true,
+            "orig_street_full": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    }
+}

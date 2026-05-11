@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+  <body>
+    <block class="Parc\AddressValidation\Block\Adminhtml\AddressValidation" name="address_validation" template="Parc_AddressValidation::order/view/address_validation.phtml" />
+    <referenceBlock class="Parc\AddressValidation\Block\Adminhtml\Order\View\Info" name="order_info" template="Parc_AddressValidation::order/view/info.phtml">
+      <container name="extra_customer_info"/>
+    </referenceBlock>
+  </body>
+</page>

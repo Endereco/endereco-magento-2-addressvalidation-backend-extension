@@ -1,0 +1,99 @@
+<?php
+/** @var AddressValidation $block */
+/** @var Escaper $escaper */
+
+use Magento\Framework\Escaper;
+use Parc\AddressValidation\Block\Adminhtml\AddressValidation;
+
+$addressValidation = $block->getValidatedAddress();
+$addressValidationId = $addressValidation->getAddressValidationId();
+
+if ($addressValidationId) {
+    $orderId = $addressValidation->getOrderId();
+    $houseNumber = $addressValidation->getManuHouseNumber() ?? $addressValidation->getApiHouseNumber();
+    $street = $addressValidation->getManuStreet() ?? $addressValidation->getApiStreet();
+    $zipCode = $addressValidation->getManuZipCode() ?? $addressValidation->getApiZipCode();
+    $city = $addressValidation->getManuCity() ?? $addressValidation->getApiCity();
+    $additionalInfo = $addressValidation->getManuAdditionalInformation() ?? $addressValidation->getApiAdditionalInformation();
+    ?>
+    <section class="admin__page-section">
+        <div class="admin__page-section-title">
+            <span class="title"><?= $block->escapeHtml(__('Validated Shipping Address')); ?></span>
+        </div>
+        <div class="admin__page-section-content">
+            <form id="validated-address-form"
+                  action="<?= $escaper->escapeUrl($block->getFormActionUrl()) ?>"
+                  method="post">
+                <input type="hidden" name="form_key" value="<?= $block->escapeHtml($block->getFormKey()) ?>">
+                <strong><?= $block->escapeHtml(__('Address')); ?></strong>
+                <?php if ($addressValidation->getEditedBy()): ?>
+                    <span><?= $block->escapeHtml(__('edited at')); ?>
+                        <?= $block->escapeHtml($addressValidation->getEditedAt()) ?>
+                        <?= $block->escapeHtml(__('by')); ?>
+                        <?= $block->escapeHtml($addressValidation->getEditedBy()) ?>
+                    </span>
+                <?php endif; ?>
+                <p style="padding-top:10px;">
+                    <label for="houseNumber"
+                           class="address-label"><?= $block->escapeHtml(__('House Number')); ?></label>
+                    <input type="text" id="houseNumber" name="houseNumber" class="address-input"
+                           value="<?= $block->escapeHtml($houseNumber); ?>">
+                </p>
+                <p>
+                    <label for="street" class="address-label"><?= $block->escapeHtml(__('Street')); ?></label>
+                    <input type="text" id="street" name="street" class="address-input"
+                           value="<?= $block->escapeHtml($street); ?>">
+                </p>
+                <p>
+                    <label for="zipCode" class="address-label"><?= $block->escapeHtml(__('Zip Code')); ?></label>
+                    <input type="text" id="zipCode" name="zipCode" class="address-input"
+                           value="<?= $block->escapeHtml($zipCode); ?>">
+                </p>
+                <p>
+                    <label for="city" class="address-label"><?= $block->escapeHtml(__('City')); ?></label>
+                    <input type="text" id="city" name="city" class="address-input"
+                           value="<?= $block->escapeHtml($city); ?>">
+                </p>
+                <p class="textarea-container">
+                    <label for="additionalInfo"
+                           class="fixed-width-label"><?= $block->escapeHtml(__('Additional Info')); ?></label>
+                    <textarea id="additionalInfo"
+                              name="additionalInfo"
+                              class="address-input"><?= $block->escapeHtml($additionalInfo); ?></textarea>
+                </p>
+                <br>
+                <div>
+                    <input type="hidden" name="addressValidationId"
+                           value="<?= $block->escapeHtml($addressValidationId); ?>">
+                    <input type="hidden" name="orderId"
+                           value="<?= $block->escapeHtml($orderId); ?>">
+                    <button type="submit" name="action" value="save"><?= $block->escapeHtml(__('Save')); ?></button>
+                    <button type="submit" name="action" value="save_as_shipping"><?= $block->escapeHtml(__('Save as shipping address')); ?></button>
+                    <button type="submit" name="action" value="restore_original"><?= $block->escapeHtml(__('Restore orig. shipping address')); ?></button>
+                </div>
+            </form>
+        </div>
+    </section>
+<?php } ?>
+
+<style>
+    .address-label {
+        width: 150px;
+        display: inline-block;
+    }
+
+    .address-input {
+        width:300px;
+    }
+
+     .fixed-width-label {
+         width: 150px;
+         display: inline-block;
+         vertical-align: middle;
+     }
+
+    .textarea-container {
+        display: inline-flex;
+        align-items: center;
+    }
+</style>

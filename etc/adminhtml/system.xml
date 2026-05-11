@@ -1,0 +1,90 @@
+<?xml version="1.0" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+  <system>
+    <tab id="parc" translate="label" sortOrder="999999">
+      <label>PARC Network</label>
+    </tab>
+    <section id="parc_addressvalidation" translate="label" sortOrder="10" showInWebsite="1" showInStore="1" showInDefault="1">
+      <label>Address Validation</label>
+      <tab>parc</tab>
+      <resource>Magento_Backend::admin</resource>
+      <group id="general" translate="label" sortOrder="10" showInDefault="1">
+        <label>Allgemein</label>
+        <field id="enable" translate="label" type="select" sortOrder="10" showInDefault="1">
+          <label>Enable</label>
+          <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+        </field>
+        <field id="api_key" translate="label" type="text" sortOrder="20" showInDefault="1">
+          <label>API Key</label>
+          <depends>
+            <field id="parc_addressvalidation/general/enable">1</field>
+          </depends>
+        </field>
+        <field id="cronschedule" translate="label" type="text" sortOrder="30" showInDefault="1">
+          <label>Cron Schedule</label>
+          <comment>Enter a valid cron expression (e.g. */10 * * * *)</comment>
+          <depends>
+            <field id="parc_addressvalidation/general/enable">1</field>
+          </depends>
+        </field>
+        <field id="overwriteoriginal" translate="label" type="select" sortOrder="40" showInDefault="1">
+          <label>Overwrite orig. shipping address</label>
+          <comment>If activated the original shipping address is overwritten by the validated address.</comment>
+          <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+          <depends>
+            <field id="parc_addressvalidation/general/enable">1</field>
+          </depends>
+        </field>
+        <field id="validationstatus" translate="label" type="select" sortOrder="50" showInDefault="1">
+          <label>Validation Status</label>
+          <comment>Select the status that orders should receive if they require manual address verification.</comment>
+          <source_model>Magento\Sales\Model\Config\Source\Order\Status</source_model>
+          <depends>
+            <field id="parc_addressvalidation/general/enable">1</field>
+          </depends>
+        </field>
+        <field id="orderstatus" translate="label" type="multiselect" sortOrder="60" showInDefault="1">
+          <label>Order Status</label>
+          <comment>Select those order status that should be considered for validation</comment>
+          <source_model>Magento\Sales\Model\Config\Source\Order\Status</source_model>
+          <frontend_model>Parc\AddressValidation\Block\Adminhtml\System\Config\Form\Field\OrderStatus</frontend_model>
+          <depends>
+            <field id="parc_addressvalidation/general/enable">1</field>
+          </depends>
+        </field>
+      </group>
+      <group id="sharpness" translate="label" sortOrder="20" showInDefault="1">
+        <label>Sharpness of the Validation</label>
+        <field id="statuscodes" translate="label" type="multiselect" sortOrder="10" showInDefault="1">
+          <label>Statuscodes</label>
+          <comment>Select those statuscodes that you want to check manually</comment>
+          <source_model>Parc\AddressValidation\Model\Config\Source\Statuscodes</source_model>
+        </field>
+        <field id="additional_info" translate="label" type="select" sortOrder="20" showInDefault="1">
+          <label>Check additional info</label>
+          <comment>If additional info exists, set always address validation status for manual checking</comment>
+          <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+        </field>
+        <depends>
+          <field id="parc_addressvalidation/general/enable">1</field>
+        </depends>
+      </group>
+      <group id="csvmapping" translate="label" sortOrder="30" showInDefault="1">
+        <label>Mapping of Export CSV</label>
+        <field id="relevanttables" translate="label" type="multiselect" sortOrder="10" showInDefault="1">
+          <label>Relevant DB Tables</label>
+          <source_model>Parc\AddressValidation\Model\Config\Source\Relevanttables</source_model>
+        </field>
+        <field id="mapping" translate="label" sortOrder="20" showInDefault="1">
+          <label>Mapping</label>
+          <comment>You need to select and save the relevant tables before adding a mapping.</comment>
+          <frontend_model>Parc\AddressValidation\Block\Adminhtml\Form\Field\CsvMapping</frontend_model>
+          <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
+        </field>
+        <depends>
+          <field id="parc_addressvalidation/general/enable">1</field>
+        </depends>
+      </group>
+    </section>
+  </system>
+</config>
