@@ -2,7 +2,7 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
   <system>
     <tab id="parc" translate="label" sortOrder="999999">
-      <label>endereco Backend Validation</label>
+      <label>endereco Backend Address Validation</label>
     </tab>
     <section id="parc_addressvalidation" translate="label" sortOrder="10" showInWebsite="1" showInStore="1" showInDefault="1">
       <label>Address Validation</label>
