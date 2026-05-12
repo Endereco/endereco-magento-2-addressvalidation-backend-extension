@@ -90,7 +90,7 @@ This extension was developed in collaboration with [Parc Network](#) <!-- add UR
 
 ## Configuration
 
-Go to **Stores → Configuration → Parc → Address Validation**.
+Go to **Stores → Configuration → endereco Backend Address Validation → Address Validation**.
 
 | Setting | Description |
 |---|---|
@@ -194,7 +194,7 @@ When an order is put on hold due to address validation, you can review and corre
 
 ## CSV Column Mapping
 
-The CSV export is fully configurable — you decide which columns appear in the file and what they are named. The mapping is set up in two steps under **Stores → Configuration → Parc → Address Validation**.
+The CSV export is fully configurable — you decide which columns appear in the file and what they are named. The mapping is set up in two steps under **Stores → Configuration → endereco Backend Address Validation → Address Validation**.
 
 ---
 
@@ -339,7 +339,7 @@ By default you could use Magento's standard `holded` status as the Validation Ho
 
 ### Step 3: Configure the module
 
-1. Go to **Stores → Configuration → Parc → Address Validation**.
+1. Go to **Stores → Configuration → endereco Backend Address Validation → Address Validation**.
 2. Set **Validation Hold Status** to your new status (`Address Validation Pending`).
 
 Orders flagged by the extension will now appear under their own status, making it easy to filter the order grid and run targeted CSV exports.
@@ -362,14 +362,14 @@ Set the cron interval long enough to ensure one run finishes before the next sta
 
 To estimate a safe interval, check how long recent runs take in **System → Action Logs** or ask your developer to check the `cron_schedule` table for the `parc_addressvalidation` job.
 
-**Configuration:** Go to **Stores → Configuration → Parc → Address Validation → Cron Schedule**.
+**Configuration:** Go to **Stores → Configuration → endereco Backend Address Validation → Address Validation → Cron Schedule**.
 
 ---
 
 ## Troubleshooting
 
 **Orders are not being validated.**
-- Check that the module is enabled under **Stores → Configuration → Parc → Address Validation**.
+- Check that the module is enabled under **Stores → Configuration → endereco Backend Address Validation → Address Validation**.
 - Verify your API key is correct.
 - Make sure the orders are in the status configured under "Order Status to Validate".
 - Check that cron is running on your server (ask your hosting provider if unsure).
