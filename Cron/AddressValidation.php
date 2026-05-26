@@ -10,13 +10,17 @@ use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Lock\LockManagerInterface;
 use Magento\Sales\Model\OrderRepository;
 use Parc\AddressValidation\Model\AddressValidationFactory;
 use Parc\AddressValidation\Service\EnderecoApi;
 use Parc\AddressValidation\Model\AddressValidationRepository;
+use Psr\Log\LoggerInterface;
 
 class AddressValidation
 {
+    private const LOCK_NAME = 'parc_addressvalidation_cron';
+
     protected string $overwriteOriginal;
 
     protected string $orderStatus;
@@ -63,6 +67,16 @@ class AddressValidation
     protected ScopeConfigInterface $scopeConfig;
 
     /**
+     * @var LockManagerInterface
+     */
+    protected LockManagerInterface $lockManager;
+
+    /**
+     * @var LoggerInterface
+     */
+    protected LoggerInterface $logger;
+
+    /**
      * @param ResourceConnection          $resourceConnection
      * @param OrderRepository             $orderRepository
      * @param EnderecoApi                 $enderecoApi
@@ -70,6 +84,8 @@ class AddressValidation
      * @param CountryFactory              $countryFactory
      * @param AddressValidationRepository $addressValidationRepository
      * @param ScopeConfigInterface        $scopeConfig
+     * @param LockManagerInterface        $lockManager
+     * @param LoggerInterface             $logger
      */
     public function __construct(
         ResourceConnection          $resourceConnection,
@@ -78,7 +94,9 @@ class AddressValidation
         AddressValidationFactory    $addressValidationFactory,
         CountryFactory              $countryFactory,
         AddressValidationRepository $addressValidationRepository,
-        ScopeConfigInterface        $scopeConfig
+        ScopeConfigInterface        $scopeConfig,
+        LockManagerInterface        $lockManager,
+        LoggerInterface             $logger
     ) {
         $this->resourceConnection          = $resourceConnection;
         $this->orderRepository             = $orderRepository;
@@ -87,6 +105,8 @@ class AddressValidation
         $this->countryFactory              = $countryFactory;
         $this->addressValidationRepository = $addressValidationRepository;
         $this->scopeConfig                 = $scopeConfig;
+        $this->lockManager                 = $lockManager;
+        $this->logger                      = $logger;
 
         $this->overwriteOriginal   = $this->scopeConfig->getValue('parc_addressvalidation/general/overwriteoriginal');
         $this->orderStatus         = $this->scopeConfig->getValue('parc_addressvalidation/general/orderstatus');
@@ -98,13 +118,27 @@ class AddressValidation
         $this->checkAdditionalInfo = $this->scopeConfig->getValue('parc_addressvalidation/sharpness/additional_info');
     }
 
+    public function execute(): void
+    {
+        if (!$this->lockManager->lock(self::LOCK_NAME, 0)) {
+            $this->logger->info('Address validation cron is already running; skipping this tick.');
+            return;
+        }
+
+        try {
+            $this->doExecute();
+        } finally {
+            $this->lockManager->unlock(self::LOCK_NAME);
+        }
+    }
+
     /**
      * @throws AlreadyExistsException
      * @throws LocalizedException
      * @throws NoSuchEntityException
      * @throws InputException
      */
-    public function execute(): void
+    private function doExecute(): void
     {
         if (!$this->orderStatus || !$this->statusCodes) {
             return;

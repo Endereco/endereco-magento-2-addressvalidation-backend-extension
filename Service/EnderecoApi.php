@@ -79,7 +79,9 @@ class EnderecoApi
     {
         $client = $this->clientFactory->create([
             'config' => [
-                'base_uri' => self::API_REQUEST_URI,
+                'base_uri'        => self::API_REQUEST_URI,
+                'connect_timeout' => 5,
+                'timeout'         => 10,
             ]
         ]);
 
