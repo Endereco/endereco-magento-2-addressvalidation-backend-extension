@@ -74,14 +74,18 @@ class OrderUnholdPlugin
         }
 
         try {
-            $adminUser = $this->authSession->getUser()->getUserName();
-
             $validatedAddress = $this->addressValidationRepository->getByOrderId($orderId);
-            $zipCode          = $validatedAddress->getManuZipCode() ?? $validatedAddress->getApiZipCode();
-            $city             = $validatedAddress->getManuCity() ?? $validatedAddress->getApiCity();
-            $street           = $validatedAddress->getManuStreet() ?? $validatedAddress->getApiStreet();
-            $houseNumber      = $validatedAddress->getManuHouseNumber() ?? $validatedAddress->getApiHouseNumber();
-            $streetFull       = $street . ' ' . $houseNumber;
+            if (!$validatedAddress->getAddressValidationId()) {
+                // Order was not put on hold by this module's validation flow.
+                return $result;
+            }
+
+            $adminUser   = $this->authSession->getUser()->getUserName();
+            $zipCode     = $validatedAddress->getManuZipCode() ?? $validatedAddress->getApiZipCode();
+            $city        = $validatedAddress->getManuCity() ?? $validatedAddress->getApiCity();
+            $street      = $validatedAddress->getManuStreet() ?? $validatedAddress->getApiStreet();
+            $houseNumber = $validatedAddress->getManuHouseNumber() ?? $validatedAddress->getApiHouseNumber();
+            $streetFull  = $street . ' ' . $houseNumber;
 
             $order           = $this->orderRepository->get($orderId);
             $shippingAddress = $order->getShippingAddress();
