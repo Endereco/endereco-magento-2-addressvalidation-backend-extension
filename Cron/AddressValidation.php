@@ -115,41 +115,44 @@ class AddressValidation
         foreach ($relevantOrders as $relevantOrder) {
             $order           = $this->orderRepository->get($relevantOrder['entity_id']);
             $shippingAddress = $order->getShippingAddress();
-            $zipCode         = preg_replace('/[\r\n"\\\]+/', ' ', $shippingAddress['postcode']);
-            $city            = preg_replace('/[\r\n"\\\]+/', ' ', $shippingAddress['city']);
-            $countryCode     = $shippingAddress['country_id'];
-            $streetFull      = preg_replace('/[\r\n"\\\]+/', ' ', $shippingAddress['street']);
-            // street splitter request
-            $bodyStreetSplitter     = '{
-                "jsonrpc":"2.0",
-                "id":1,
-                "method":"splitStreet",
-                "params":{
-                    "formatCountry":"' . $countryCode . '",
-                    "language":"' . $countryCode . '",
-                    "street": "' . $streetFull . '"
-                }
-            }';
+            $zipCode         = (string)$shippingAddress['postcode'];
+            $city            = (string)$shippingAddress['city'];
+            $countryCode     = (string)$shippingAddress['country_id'];
+            $streetFull      = (string)$shippingAddress['street'];
+
+            $bodyStreetSplitter = json_encode([
+                'jsonrpc' => '2.0',
+                'id'      => 1,
+                'method'  => 'splitStreet',
+                'params'  => [
+                    'formatCountry' => $countryCode,
+                    'language'      => $countryCode,
+                    'street'        => $streetFull,
+                ],
+            ]);
+
             $responseStreetSplitter = $this->enderecoApi->execute($bodyStreetSplitter);
             if ($responseStreetSplitter) {
                 $responseArrayStreetSplitter = json_decode($responseStreetSplitter, true);
                 $splittedStreet              = $responseArrayStreetSplitter['result']['streetName'];
                 $splittedHouseNumber         = $responseArrayStreetSplitter['result']['houseNumber'];
                 $additionalInfo              = $responseArrayStreetSplitter['result']['additionalInfo'] ?? null;
-                $body                        = '{
-                  "jsonrpc": "2.0",
-                  "id": 1,
-                  "method": "addressCheck",
-                  "params": {
-                    "country": "' . $countryCode . '",
-                    "language": "' . $countryCode . '",
-                    "postCode": "' . $zipCode . '",
-                    "cityName": "' . $city . '",
-                    "street": "' . $splittedStreet . '",
-                    "houseNumber": "' . $splittedHouseNumber . '"
-                  }
-                }';
-                $response                    = $this->enderecoApi->execute($body);
+
+                $body = json_encode([
+                    'jsonrpc' => '2.0',
+                    'id'      => 1,
+                    'method'  => 'addressCheck',
+                    'params'  => [
+                        'country'     => $countryCode,
+                        'language'    => $countryCode,
+                        'postCode'    => $zipCode,
+                        'cityName'    => $city,
+                        'street'      => $splittedStreet,
+                        'houseNumber' => $splittedHouseNumber,
+                    ],
+                ]);
+
+                $response = $this->enderecoApi->execute($body);
                 if ($response) {
                     $response_array = json_decode($response, true);
                     $foundAddresses = $response_array['result']['predictions'];
