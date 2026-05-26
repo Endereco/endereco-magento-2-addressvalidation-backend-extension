@@ -1,6 +1,0 @@
-<?xml version="1.0"?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
-  <event name="cron_schedule_generate_jobs">
-    <observer name="parc_addressvalidation_disable_cron" instance="Parc\Addressvalidation\Observer\DisableCronObserver" />
-  </event>
-</config>
