@@ -33,7 +33,7 @@ class CronConfigPlugin
     public function afterGetJobs(Config $subject, $result)
     {
         // Check if our cron job is even registered
-        if (!isset($result['default']['parc_addressvalidation'])) {
+        if (!isset($result['parcnetwork']['parc_addressvalidation'])) {
             return $result;
         }
 
@@ -41,7 +41,7 @@ class CronConfigPlugin
         $isEnabled = $this->scopeConfig->isSetFlag(self::XML_PATH_ENABLE, ScopeInterface::SCOPE_STORE);
 
         if (!$isEnabled) {
-            unset($result['default']['parc_addressvalidation']);
+            unset($result['parcnetwork']['parc_addressvalidation']);
 
             return $result;
         }
@@ -51,7 +51,7 @@ class CronConfigPlugin
 
         // Validate cron expression format (basic 5-field check)
         if ($dynamicSchedule && preg_match('/^([\*\d\/,-]+\s){4}[\*\d\/,-]+$/', $dynamicSchedule)) {
-            $result['default']['parc_addressvalidation']['schedule'] = $dynamicSchedule;
+            $result['parcnetwork']['parc_addressvalidation']['schedule'] = $dynamicSchedule;
         } else {
             $this->logger->warning(sprintf(
                 'Invalid or missing cron expression for parc_addressvalidation: "%s"',
