@@ -339,4 +339,44 @@ class AddressValidation extends AbstractModel implements AddressValidationInterf
     {
         return $this->setData(self::EDITED_AT, $editedAt);
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function getResolvedZipCode(): ?string
+    {
+        return $this->getManuZipCode() ?? $this->getApiZipCode();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getResolvedCity(): ?string
+    {
+        return $this->getManuCity() ?? $this->getApiCity();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getResolvedStreet(): ?string
+    {
+        return $this->getManuStreet() ?? $this->getApiStreet();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getResolvedHouseNumber(): ?string
+    {
+        return $this->getManuHouseNumber() ?? $this->getApiHouseNumber();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getResolvedAdditionalInformation(): ?string
+    {
+        return $this->getManuAdditionalInformation() ?? $this->getApiAdditionalInformation();
+    }
 }

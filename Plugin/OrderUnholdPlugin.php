@@ -80,19 +80,15 @@ class OrderUnholdPlugin
                 return $result;
             }
 
-            $adminUser   = $this->authSession->getUser()->getUserName();
-            $zipCode     = $validatedAddress->getManuZipCode() ?? $validatedAddress->getApiZipCode();
-            $city        = $validatedAddress->getManuCity() ?? $validatedAddress->getApiCity();
-            $street      = $validatedAddress->getManuStreet() ?? $validatedAddress->getApiStreet();
-            $houseNumber = $validatedAddress->getManuHouseNumber() ?? $validatedAddress->getApiHouseNumber();
-            $streetFull  = $street . ' ' . $houseNumber;
+            $adminUser  = $this->authSession->getUser()->getUserName();
+            $streetFull = $validatedAddress->getResolvedStreet() . ' ' . $validatedAddress->getResolvedHouseNumber();
 
             $order           = $this->orderRepository->get($orderId);
             $shippingAddress = $order->getShippingAddress();
 
             $shippingAddress
-                ->setPostcode($zipCode)
-                ->setCity($city)
+                ->setPostcode($validatedAddress->getResolvedZipCode())
+                ->setCity($validatedAddress->getResolvedCity())
                 ->setStreet($streetFull);
 
             $order->addCommentToStatusHistory(__(

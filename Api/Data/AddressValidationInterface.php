@@ -329,4 +329,31 @@ interface AddressValidationInterface
      * @return AddressValidationInterface
      */
     public function setEditedAt(?string $editedAt): AddressValidationInterface;
+
+    /**
+     * Resolve the manual override if set, else the API value.
+     *
+     * @return string|null
+     */
+    public function getResolvedZipCode(): ?string;
+
+    /**
+     * @return string|null
+     */
+    public function getResolvedCity(): ?string;
+
+    /**
+     * @return string|null
+     */
+    public function getResolvedStreet(): ?string;
+
+    /**
+     * @return string|null
+     */
+    public function getResolvedHouseNumber(): ?string;
+
+    /**
+     * @return string|null
+     */
+    public function getResolvedAdditionalInformation(): ?string;
 }

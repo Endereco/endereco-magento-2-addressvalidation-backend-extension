@@ -10,11 +10,11 @@ $addressValidation = $block->getValidatedAddress();
 if ($addressValidation !== null) {
     $addressValidationId = $addressValidation->getAddressValidationId();
     $orderId = $addressValidation->getOrderId();
-    $houseNumber = $addressValidation->getManuHouseNumber() ?? $addressValidation->getApiHouseNumber();
-    $street = $addressValidation->getManuStreet() ?? $addressValidation->getApiStreet();
-    $zipCode = $addressValidation->getManuZipCode() ?? $addressValidation->getApiZipCode();
-    $city = $addressValidation->getManuCity() ?? $addressValidation->getApiCity();
-    $additionalInfo = $addressValidation->getManuAdditionalInformation() ?? $addressValidation->getApiAdditionalInformation();
+    $houseNumber = $addressValidation->getResolvedHouseNumber();
+    $street = $addressValidation->getResolvedStreet();
+    $zipCode = $addressValidation->getResolvedZipCode();
+    $city = $addressValidation->getResolvedCity();
+    $additionalInfo = $addressValidation->getResolvedAdditionalInformation();
     ?>
     <section class="admin__page-section">
         <div class="admin__page-section-title">

@@ -268,12 +268,14 @@ class AddressValidationRepository implements AddressValidationRepositoryInterfac
             $order           = $this->orderRepository->get($addressValidation->getOrderId());
             $shippingAddress = $order->getShippingAddress();
             // set validated address as orig. shipping address if configuration is enabled
-            $street      = $addressValidation->getManuStreet() ?? $addressValidation->getApiStreet();
-            $houseNumber = $addressValidation->getManuHouseNumber() ?? $addressValidation->getApiHouseNumber();
             $shippingAddress
-                ->setPostcode($addressValidation->getManuZipCode() ?? $addressValidation->getApiZipCode())
-                ->setCity($addressValidation->getManuCity() ?? $addressValidation->getApiCity())
-                ->setStreet($street . ' ' . $houseNumber);
+                ->setPostcode($addressValidation->getResolvedZipCode())
+                ->setCity($addressValidation->getResolvedCity())
+                ->setStreet(
+                    $addressValidation->getResolvedStreet()
+                    . ' '
+                    . $addressValidation->getResolvedHouseNumber()
+                );
 
             $order->addCommentToStatusHistory(
                 'the original delivery address was updated by the system to the address verified by ' .
