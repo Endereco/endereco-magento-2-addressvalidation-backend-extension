@@ -27,12 +27,12 @@ class Save extends Action implements HttpPostActionInterface
     /**
      * @var ManagerInterface
      */
-    protected $messageManager;
+    protected ManagerInterface $messageManager;
 
     /**
      * @var RedirectFactory
      */
-    protected $resultRedirectFactory;
+    protected RedirectFactory $resultRedirectFactory;
 
     /**
      * @var BackendAuthSession
