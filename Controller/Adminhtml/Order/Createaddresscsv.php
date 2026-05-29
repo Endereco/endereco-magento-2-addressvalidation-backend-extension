@@ -31,6 +31,18 @@ class Createaddresscsv extends Action
         'additional_information',
     ];
 
+    /**
+     * Original shipping columns that the export can fall back to
+     * when both manu_* and api_* are NULL (e.g. after a restore).
+     * house_number and additional_information have no orig_ equivalent
+     * because the original address is stored as a single street string.
+     */
+    private const ORIG_FALLBACK_COLUMNS = [
+        'zip_code' => 'orig_zip_code',
+        'city'     => 'orig_city',
+        'street'   => 'orig_street_full',
+    ];
+
 
     protected Filter $filter;
 
@@ -171,15 +183,16 @@ class Createaddresscsv extends Action
         }
         $tableName = 'parc_addressvalidation';
 
+        $candidates = ["manu_$baseColumnName", "api_$baseColumnName"];
+        if (isset(self::ORIG_FALLBACK_COLUMNS[$baseColumnName])) {
+            $candidates[] = self::ORIG_FALLBACK_COLUMNS[$baseColumnName];
+        }
+        $coalesceExpr = 'COALESCE(' . implode(', ', $candidates) . ", '')";
+
         $connection = $this->resourceConnection->getConnection();
         $query      = $connection->select()
                                  ->from($tableName, [
-                                     $baseColumnName => new \Zend_Db_Expr(
-                                         "CASE
-                                         WHEN edited_by IS NOT NULL AND edited_by <> '' THEN manu_$baseColumnName
-                                         ELSE api_$baseColumnName
-                                         END"
-                                     )
+                                     $baseColumnName => new \Zend_Db_Expr($coalesceExpr),
                                  ])
                                  ->where('order_id = ?', $orderId)
                                  ->limit(1);
