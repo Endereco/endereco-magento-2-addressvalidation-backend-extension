@@ -156,7 +156,7 @@ class Save extends Action implements HttpPostActionInterface
         $shippingAddress = $order->getShippingAddress();
 
         if (!$shippingAddress) {
-            throw new Exception('Shipping address not found.');
+            throw new LocalizedException(__('Shipping address not found.'));
         }
 
         $shippingAddress
@@ -164,7 +164,9 @@ class Save extends Action implements HttpPostActionInterface
             ->setCity($values['city'])
             ->setStreet($values['street'] . ' ' . $values['houseNumber']);
 
-        $order->addCommentToStatusHistory('original shipping address was updated by ' . $values['edited_by']);
+        $order->addCommentToStatusHistory(
+            __('Original shipping address was updated by %1.', $values['edited_by'])
+        );
 
         $this->orderRepository->save($order);
     }
@@ -201,7 +203,9 @@ class Save extends Action implements HttpPostActionInterface
             ->setCity($addressValidation->getOrigCity())
             ->setStreet($addressValidation->getOrigStreetFull());
 
-        $order->addCommentToStatusHistory('original shipping address was restored by ' . $values['edited_by']);
+        $order->addCommentToStatusHistory(
+            __('Original shipping address was restored by %1.', $values['edited_by'])
+        );
 
         $this->orderRepository->save($order);
     }

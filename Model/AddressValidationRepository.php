@@ -277,11 +277,10 @@ class AddressValidationRepository implements AddressValidationRepositoryInterfac
                     . $addressValidation->getResolvedHouseNumber()
                 );
 
-            $order->addCommentToStatusHistory(
-                'the original delivery address was updated by the system to the address verified by ' .
-                $values['edited_by'] .
-                ' due to the config'
-            );
+            $order->addCommentToStatusHistory(__(
+                'Original delivery address was overwritten by the system with the address verified by %1 (per module configuration).',
+                $values['edited_by']
+            ));
 
             $this->orderRepository->save($order);
         }

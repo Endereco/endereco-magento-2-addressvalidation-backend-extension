@@ -212,9 +212,9 @@ class AddressValidation
                                 . ($foundAddresses[0]['houseNumber'] ?? '')
                             );
 
-                        $order->addCommentToStatusHistory(
-                            'original shipping address was updated to the validated address by system due to config'
-                        );
+                        $order->addCommentToStatusHistory(__(
+                            'Original shipping address was overwritten with the validated address by the system (per module configuration).'
+                        ));
 
                         $this->orderRepository->save($order);
                     }
@@ -273,7 +273,7 @@ class AddressValidation
         $order->setState('holded');
         $order->setStatus($this->validationStatus);
         $order->addCommentToStatusHistory(
-            'Zurückgestellt wegen Adressprüfung <br> by System',
+            __('Order put on hold for address verification by the system.'),
             $this->validationStatus
         );
         $this->orderRepository->save($order);
