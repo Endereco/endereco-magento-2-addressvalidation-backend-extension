@@ -107,11 +107,9 @@ class Createaddresscsv extends Action
 
             foreach ($mapping as $column) {
                 $columnValue = $column['value'];
-                $data        = str_contains($columnValue, '.')
+                $orderData[] = str_contains($columnValue, '.')
                     ? $this->getDirectDBValue($columnValue, $orderId)
                     : $this->getValidatedDBValue($columnValue, $orderId);
-
-                $orderData += $data;
             }
 
             $csvData[] = $orderData;
@@ -129,7 +127,7 @@ class Createaddresscsv extends Action
         ], DirectoryList::TMP);
     }
 
-    private function getDirectDBValue($columnValue, $orderId)
+    private function getDirectDBValue($columnValue, $orderId): string
     {
         $columnArray = explode('.', $columnValue);
         $tableName   = $columnArray[0];
@@ -142,10 +140,10 @@ class Createaddresscsv extends Action
                                  ->where("$key = ?", $orderId)
                                  ->limit(1);
 
-        return [$columnName => $connection->fetchOne($query)];
+        return (string)$connection->fetchOne($query);
     }
 
-    private function getValidatedDBValue($columnValue, $orderId)
+    private function getValidatedDBValue($columnValue, $orderId): string
     {
         $baseColumnName = substr($columnValue, 4);
         $tableName      = 'parc_addressvalidation';
@@ -163,6 +161,6 @@ class Createaddresscsv extends Action
                                  ->where('order_id = ?', $orderId)
                                  ->limit(1);
 
-        return [$baseColumnName => $connection->fetchOne($query)];
+        return (string)$connection->fetchOne($query);
     }
 }
