@@ -6,9 +6,9 @@ use Magento\Framework\Escaper;
 use Parc\AddressValidation\Block\Adminhtml\AddressValidation;
 
 $addressValidation = $block->getValidatedAddress();
-$addressValidationId = $addressValidation->getAddressValidationId();
 
-if ($addressValidationId) {
+if ($addressValidation !== null) {
+    $addressValidationId = $addressValidation->getAddressValidationId();
     $orderId = $addressValidation->getOrderId();
     $houseNumber = $addressValidation->getManuHouseNumber() ?? $addressValidation->getApiHouseNumber();
     $street = $addressValidation->getManuStreet() ?? $addressValidation->getApiStreet();

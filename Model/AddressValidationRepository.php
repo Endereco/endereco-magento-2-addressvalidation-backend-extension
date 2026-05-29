@@ -190,16 +190,30 @@ class AddressValidationRepository implements AddressValidationRepositoryInterfac
     }
 
     /**
-     * @param $orderId
-     *
-     * @return AddressValidationInterface
+     * @inheritDoc
      */
-    public function getByOrderId($orderId): AddressValidationInterface
+    public function getByOrderId(int $orderId): AddressValidationInterface
+    {
+        $addressValidation = $this->getByOrderIdOrNull($orderId);
+        if ($addressValidation === null) {
+            throw new NoSuchEntityException(__(
+                'No address_validation record exists for order id "%1".',
+                $orderId
+            ));
+        }
+
+        return $addressValidation;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getByOrderIdOrNull(int $orderId): ?AddressValidationInterface
     {
         $addressValidation = $this->addressValidationFactory->create();
         $this->resource->load($addressValidation, $orderId, 'order_id');
 
-        return $addressValidation;
+        return $addressValidation->getId() ? $addressValidation : null;
     }
 
     /**

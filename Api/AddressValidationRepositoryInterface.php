@@ -71,4 +71,25 @@ interface AddressValidationRepositoryInterface
      * @throws LocalizedException
      */
     public function deleteById(int $addressValidationId): bool;
+
+    /**
+     * Retrieve the address_validation record for the given sales-order id.
+     *
+     * @param int $orderId
+     *
+     * @return AddressValidationInterface
+     * @throws NoSuchEntityException When no record exists for the order.
+     */
+    public function getByOrderId(int $orderId): AddressValidationInterface;
+
+    /**
+     * Retrieve the address_validation record for the given sales-order id,
+     * or null when none exists. Use this when the order may not have been
+     * processed by the validation flow yet.
+     *
+     * @param int $orderId
+     *
+     * @return AddressValidationInterface|null
+     */
+    public function getByOrderIdOrNull(int $orderId): ?AddressValidationInterface;
 }
