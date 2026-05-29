@@ -56,7 +56,7 @@ class EnderecoApi
         $this->responseFactory = $responseFactory;
         $this->scopeConfig     = $scopeConfig;
 
-        $this->apiKey = $this->scopeConfig->getValue('parc_addressvalidation/general/api_key');
+        $this->apiKey = (string)$this->scopeConfig->getValue('parc_addressvalidation/general/api_key');
     }
 
     /**

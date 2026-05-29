@@ -99,7 +99,7 @@ class AddressValidationRepository implements AddressValidationRepositoryInterfac
         $this->scopeConfig                        = $scopeConfig;
         $this->orderRepository                    = $orderRepository;
 
-        $this->overwriteOriginal = $this->scopeConfig->getValue('parc_addressvalidation/general/overwriteoriginal');
+        $this->overwriteOriginal = (string)$this->scopeConfig->getValue('parc_addressvalidation/general/overwriteoriginal');
     }
 
     /**

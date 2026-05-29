@@ -108,14 +108,14 @@ class AddressValidation
         $this->lockManager                 = $lockManager;
         $this->logger                      = $logger;
 
-        $this->overwriteOriginal   = $this->scopeConfig->getValue('parc_addressvalidation/general/overwriteoriginal');
-        $this->orderStatus         = $this->scopeConfig->getValue('parc_addressvalidation/general/orderstatus');
-        $this->validationStatus    = $this->scopeConfig->getValue('parc_addressvalidation/general/validationstatus');
-        $this->statusCodes         = explode(
+        $this->overwriteOriginal   = (string)$this->scopeConfig->getValue('parc_addressvalidation/general/overwriteoriginal');
+        $this->orderStatus         = (string)$this->scopeConfig->getValue('parc_addressvalidation/general/orderstatus');
+        $this->validationStatus    = (string)$this->scopeConfig->getValue('parc_addressvalidation/general/validationstatus');
+        $this->statusCodes         = array_filter(explode(
             ',',
-            $this->scopeConfig->getValue('parc_addressvalidation/sharpness/statuscodes')
-        );
-        $this->checkAdditionalInfo = $this->scopeConfig->getValue('parc_addressvalidation/sharpness/additional_info');
+            (string)$this->scopeConfig->getValue('parc_addressvalidation/sharpness/statuscodes')
+        ));
+        $this->checkAdditionalInfo = (string)$this->scopeConfig->getValue('parc_addressvalidation/sharpness/additional_info');
     }
 
     public function execute(): void
