@@ -94,6 +94,9 @@ class Save extends Action implements HttpPostActionInterface
                 $this->messageManager->addErrorMessage(__('Please fill out all the address fields!'));
             } else {
                 try {
+                    // Persist manu_* on the validation record first so the
+                    // unhold plugin and CSV export see the same values.
+                    $this->addressValidationRepository->saveNewValues($params);
                     $this->updateShippingAddress($params);
                     $this->messageManager
                         ->addSuccessMessage(__('The validated address was successfully saved as shipping address.'));
