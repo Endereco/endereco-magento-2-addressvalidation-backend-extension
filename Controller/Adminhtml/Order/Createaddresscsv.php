@@ -17,6 +17,21 @@ use Zend_Db_Expr;
 
 class Createaddresscsv extends Action
 {
+    /**
+     * Suffixes that may be appended to manu_ / api_ when building
+     * the validated-address column expression. Constrains an
+     * admin-controlled config value to a known set of identifiers
+     * so it cannot smuggle SQL through the CASE expression.
+     */
+    private const ALLOWED_VALIDATED_COLUMNS = [
+        'zip_code',
+        'city',
+        'street',
+        'house_number',
+        'additional_information',
+    ];
+
+
     protected Filter $filter;
 
     protected OrderCollectionFactory $orderCollectionFactory;
@@ -143,10 +158,18 @@ class Createaddresscsv extends Action
         return (string)$connection->fetchOne($query);
     }
 
+    /**
+     * @throws LocalizedException
+     */
     private function getValidatedDBValue($columnValue, $orderId): string
     {
         $baseColumnName = substr($columnValue, 4);
-        $tableName      = 'parc_addressvalidation';
+        if (!in_array($baseColumnName, self::ALLOWED_VALIDATED_COLUMNS, true)) {
+            throw new LocalizedException(
+                __('Invalid validated-address column "%1".', $baseColumnName)
+            );
+        }
+        $tableName = 'parc_addressvalidation';
 
         $connection = $this->resourceConnection->getConnection();
         $query      = $connection->select()
