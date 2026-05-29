@@ -7,7 +7,7 @@
     <section id="parc_addressvalidation" translate="label" sortOrder="10" showInWebsite="1" showInStore="1" showInDefault="1">
       <label>Address Validation</label>
       <tab>parc</tab>
-      <resource>Magento_Backend::admin</resource>
+      <resource>Parc_AddressValidation::address_validation</resource>
       <group id="general" translate="label" sortOrder="10" showInDefault="1">
         <label>Allgemein</label>
         <field id="enable" translate="label" type="select" sortOrder="10" showInDefault="1">
