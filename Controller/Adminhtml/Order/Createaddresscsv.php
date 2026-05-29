@@ -31,7 +31,7 @@ class Createaddresscsv extends Action
 
     protected ResourceConnection $resourceConnection;
 
-    protected string $fileName = 'validated_addresses.csv';
+    protected string $fileName;
 
     protected string $filePath;
 
@@ -68,12 +68,18 @@ class Createaddresscsv extends Action
         $this->scopeConfig            = $scopeConfig;
         $this->resourceConnection     = $resourceConnection;
 
-        $this->filePath = $this->directoryList->getPath(DirectoryList::TMP) . '/' . $this->fileName;
         $this->tableKeys = [];
     }
 
     public function execute()
     {
+        $this->fileName = sprintf(
+            'validated_addresses_%s_%s.csv',
+            date('Ymd_His'),
+            substr(bin2hex(random_bytes(2)), 0, 4)
+        );
+        $this->filePath = $this->directoryList->getPath(DirectoryList::TMP) . '/' . $this->fileName;
+
         $collection = $this->filter->getCollection($this->orderCollectionFactory->create());
 
         $tables  = $this->scopeConfig->getValue('parc_addressvalidation/csvmapping/relevanttables');
@@ -114,7 +120,7 @@ class Createaddresscsv extends Action
         $this->csvProcessor
             ->setEnclosure('"')
             ->setDelimiter(';')
-            ->appendData($this->filePath, $csvData);
+            ->saveData($this->filePath, $csvData);
 
         return $this->fileFactory->create($this->fileName, [
             'type'  => 'filename',
