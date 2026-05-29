@@ -74,7 +74,7 @@ class OrderUnholdPlugin
         }
 
         try {
-            $validatedAddress = $this->addressValidationRepository->getByOrderIdOrNull($orderId);
+            $validatedAddress = $this->addressValidationRepository->getByOrderIdOrNull((int)$orderId);
             if ($validatedAddress === null) {
                 // Order was not put on hold by this module's validation flow.
                 return $result;
