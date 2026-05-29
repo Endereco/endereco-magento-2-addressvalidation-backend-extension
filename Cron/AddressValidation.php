@@ -206,7 +206,11 @@ class AddressValidation
                         $shippingAddress
                             ->setPostcode($foundAddresses[0]['postCode'])
                             ->setCity($foundAddresses[0]['cityName'])
-                            ->setStreet($foundAddresses[0]['street'] . ' ' . $foundAddresses[0]['houseNumber'] ?? null);
+                            ->setStreet(
+                                ($foundAddresses[0]['street'] ?? '')
+                                . ' '
+                                . ($foundAddresses[0]['houseNumber'] ?? '')
+                            );
 
                         $order->addCommentToStatusHistory(
                             'original shipping address was updated to the validated address by system due to config'
