@@ -25,16 +25,6 @@ class Save extends Action implements HttpPostActionInterface
     protected AddressValidationRepository $addressValidationRepository;
 
     /**
-     * @var ManagerInterface
-     */
-    protected ManagerInterface $messageManager;
-
-    /**
-     * @var RedirectFactory
-     */
-    protected RedirectFactory $resultRedirectFactory;
-
-    /**
      * @var BackendAuthSession
      */
     protected BackendAuthSession $backendAuthSession;
