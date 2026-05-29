@@ -58,7 +58,7 @@
         <field id="statuscodes" translate="label" type="multiselect" sortOrder="10" showInDefault="1">
           <label>Statuscodes</label>
           <comment>Select those statuscodes that you want to check manually</comment>
-          <source_model>Parc\AddressValidation\Model\Config\Source\Statuscodes</source_model>
+          <source_model>Parc\AddressValidation\Model\Config\Source\StatusCodes</source_model>
         </field>
         <field id="additional_info" translate="label" type="select" sortOrder="20" showInDefault="1">
           <label>Check additional info</label>
@@ -73,7 +73,7 @@
         <label>Mapping of Export CSV</label>
         <field id="relevanttables" translate="label" type="multiselect" sortOrder="10" showInDefault="1">
           <label>Relevant DB Tables</label>
-          <source_model>Parc\AddressValidation\Model\Config\Source\Relevanttables</source_model>
+          <source_model>Parc\AddressValidation\Model\Config\Source\RelevantTables</source_model>
         </field>
         <field id="mapping" translate="label" sortOrder="20" showInDefault="1">
           <label>Mapping</label>

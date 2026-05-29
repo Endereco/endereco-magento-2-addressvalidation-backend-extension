@@ -5,7 +5,7 @@ namespace Parc\AddressValidation\Model\Config\Source;
 
 use Magento\Framework\Data\OptionSourceInterface;
 
-class Statuscodes implements OptionSourceInterface
+class StatusCodes implements OptionSourceInterface
 {
     /**
      * Endereco API status codes available for the "manual review" trigger.

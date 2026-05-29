@@ -5,7 +5,7 @@ namespace Parc\AddressValidation\Model\Config\Source;
 
 use Magento\Framework\Data\OptionSourceInterface;
 
-class Relevanttables implements OptionSourceInterface
+class RelevantTables implements OptionSourceInterface
 {
     public function toOptionArray(): array
     {

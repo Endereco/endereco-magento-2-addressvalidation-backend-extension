@@ -15,7 +15,7 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\ResourceConnection;
 use Zend_Db_Expr;
 
-class Createaddresscsv extends Action
+class CreateAddressCsv extends Action
 {
     /**
      * Suffixes that may be appended to manu_ / api_ when building
