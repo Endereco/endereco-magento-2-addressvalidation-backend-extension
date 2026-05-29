@@ -264,8 +264,8 @@ class AddressValidation
      */
     private function setAddressValidationStatus($order): void
     {
-        $holdBeforeState  = $order->getHoldBeforeState() ?? $order->getState();
-        $holdBeforeStatus = $order->getHoldBeforeStatus() ?? $order->getStatus();
+        $holdBeforeState  = $order->getHoldBeforeState() ?: $order->getState();
+        $holdBeforeStatus = $order->getHoldBeforeStatus() ?: $order->getStatus();
 
         $order->setHoldBeforeState($holdBeforeState);
         $order->setHoldBeforeStatus($holdBeforeStatus);
