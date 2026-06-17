@@ -95,7 +95,7 @@ class AddressValidation extends AbstractModel implements AddressValidationInterf
     /**
      * @inheritDoc
      */
-    public function setOrigZipCode(string $origZipCode): AddressValidationInterface
+    public function setOrigZipCode(?string $origZipCode): AddressValidationInterface
     {
         return $this->setData(self::ORIG_ZIP_CODE, $origZipCode);
     }
@@ -111,7 +111,7 @@ class AddressValidation extends AbstractModel implements AddressValidationInterf
     /**
      * @inheritDoc
      */
-    public function setOrigCity(string $origCity): AddressValidationInterface
+    public function setOrigCity(?string $origCity): AddressValidationInterface
     {
         return $this->setData(self::ORIG_CITY, $origCity);
     }
@@ -127,7 +127,7 @@ class AddressValidation extends AbstractModel implements AddressValidationInterf
     /**
      * @inheritDoc
      */
-    public function setOrigStreetFull(string $origStreetFull): AddressValidationInterface
+    public function setOrigStreetFull(?string $origStreetFull): AddressValidationInterface
     {
         return $this->setData(self::ORIG_STREET_FULL, $origStreetFull);
     }
@@ -319,7 +319,7 @@ class AddressValidation extends AbstractModel implements AddressValidationInterf
     /**
      * @inheritDoc
      */
-    public function setEditedBy(string $editedBy): AddressValidationInterface
+    public function setEditedBy(?string $editedBy): AddressValidationInterface
     {
         return $this->setData(self::EDITED_BY, $editedBy);
     }
@@ -335,8 +335,48 @@ class AddressValidation extends AbstractModel implements AddressValidationInterf
     /**
      * @inheritDoc
      */
-    public function setEditedAt(string $editedAt): AddressValidationInterface
+    public function setEditedAt(?string $editedAt): AddressValidationInterface
     {
         return $this->setData(self::EDITED_AT, $editedAt);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getResolvedZipCode(): ?string
+    {
+        return $this->getManuZipCode() ?? $this->getApiZipCode();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getResolvedCity(): ?string
+    {
+        return $this->getManuCity() ?? $this->getApiCity();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getResolvedStreet(): ?string
+    {
+        return $this->getManuStreet() ?? $this->getApiStreet();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getResolvedHouseNumber(): ?string
+    {
+        return $this->getManuHouseNumber() ?? $this->getApiHouseNumber();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getResolvedAdditionalInformation(): ?string
+    {
+        return $this->getManuAdditionalInformation() ?? $this->getApiAdditionalInformation();
     }
 }

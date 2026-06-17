@@ -10,13 +10,17 @@ use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Lock\LockManagerInterface;
 use Magento\Sales\Model\OrderRepository;
 use Parc\AddressValidation\Model\AddressValidationFactory;
 use Parc\AddressValidation\Service\EnderecoApi;
 use Parc\AddressValidation\Model\AddressValidationRepository;
+use Psr\Log\LoggerInterface;
 
 class AddressValidation
 {
+    private const LOCK_NAME = 'parc_addressvalidation_cron';
+
     protected string $overwriteOriginal;
 
     protected string $orderStatus;
@@ -63,6 +67,16 @@ class AddressValidation
     protected ScopeConfigInterface $scopeConfig;
 
     /**
+     * @var LockManagerInterface
+     */
+    protected LockManagerInterface $lockManager;
+
+    /**
+     * @var LoggerInterface
+     */
+    protected LoggerInterface $logger;
+
+    /**
      * @param ResourceConnection          $resourceConnection
      * @param OrderRepository             $orderRepository
      * @param EnderecoApi                 $enderecoApi
@@ -70,6 +84,8 @@ class AddressValidation
      * @param CountryFactory              $countryFactory
      * @param AddressValidationRepository $addressValidationRepository
      * @param ScopeConfigInterface        $scopeConfig
+     * @param LockManagerInterface        $lockManager
+     * @param LoggerInterface             $logger
      */
     public function __construct(
         ResourceConnection          $resourceConnection,
@@ -78,7 +94,9 @@ class AddressValidation
         AddressValidationFactory    $addressValidationFactory,
         CountryFactory              $countryFactory,
         AddressValidationRepository $addressValidationRepository,
-        ScopeConfigInterface        $scopeConfig
+        ScopeConfigInterface        $scopeConfig,
+        LockManagerInterface        $lockManager,
+        LoggerInterface             $logger
     ) {
         $this->resourceConnection          = $resourceConnection;
         $this->orderRepository             = $orderRepository;
@@ -87,15 +105,31 @@ class AddressValidation
         $this->countryFactory              = $countryFactory;
         $this->addressValidationRepository = $addressValidationRepository;
         $this->scopeConfig                 = $scopeConfig;
+        $this->lockManager                 = $lockManager;
+        $this->logger                      = $logger;
 
-        $this->overwriteOriginal   = $this->scopeConfig->getValue('parc_addressvalidation/general/overwriteoriginal');
-        $this->orderStatus         = $this->scopeConfig->getValue('parc_addressvalidation/general/orderstatus');
-        $this->validationStatus    = $this->scopeConfig->getValue('parc_addressvalidation/general/validationstatus');
-        $this->statusCodes         = explode(
+        $this->overwriteOriginal   = (string)$this->scopeConfig->getValue('parc_addressvalidation/general/overwriteoriginal');
+        $this->orderStatus         = (string)$this->scopeConfig->getValue('parc_addressvalidation/general/orderstatus');
+        $this->validationStatus    = (string)$this->scopeConfig->getValue('parc_addressvalidation/general/validationstatus');
+        $this->statusCodes         = array_filter(explode(
             ',',
-            $this->scopeConfig->getValue('parc_addressvalidation/sharpness/statuscodes')
-        );
-        $this->checkAdditionalInfo = $this->scopeConfig->getValue('parc_addressvalidation/sharpness/additional_info');
+            (string)$this->scopeConfig->getValue('parc_addressvalidation/sharpness/statuscodes')
+        ));
+        $this->checkAdditionalInfo = (string)$this->scopeConfig->getValue('parc_addressvalidation/sharpness/additional_info');
+    }
+
+    public function execute(): void
+    {
+        if (!$this->lockManager->lock(self::LOCK_NAME, 0)) {
+            $this->logger->info('Address validation cron is already running; skipping this tick.');
+            return;
+        }
+
+        try {
+            $this->doExecute();
+        } finally {
+            $this->lockManager->unlock(self::LOCK_NAME);
+        }
     }
 
     /**
@@ -104,7 +138,7 @@ class AddressValidation
      * @throws NoSuchEntityException
      * @throws InputException
      */
-    public function execute(): void
+    private function doExecute(): void
     {
         if (!$this->orderStatus || !$this->statusCodes) {
             return;
@@ -115,41 +149,44 @@ class AddressValidation
         foreach ($relevantOrders as $relevantOrder) {
             $order           = $this->orderRepository->get($relevantOrder['entity_id']);
             $shippingAddress = $order->getShippingAddress();
-            $zipCode         = preg_replace('/[\r\n"\\\]+/', ' ', $shippingAddress['postcode']);
-            $city            = preg_replace('/[\r\n"\\\]+/', ' ', $shippingAddress['city']);
-            $countryCode     = $shippingAddress['country_id'];
-            $streetFull      = preg_replace('/[\r\n"\\\]+/', ' ', $shippingAddress['street']);
-            // street splitter request
-            $bodyStreetSplitter     = '{
-                "jsonrpc":"2.0",
-                "id":1,
-                "method":"splitStreet",
-                "params":{
-                    "formatCountry":"' . $countryCode . '",
-                    "language":"' . $countryCode . '",
-                    "street": "' . $streetFull . '"
-                }
-            }';
+            $zipCode         = (string)$shippingAddress['postcode'];
+            $city            = (string)$shippingAddress['city'];
+            $countryCode     = (string)$shippingAddress['country_id'];
+            $streetFull      = (string)$shippingAddress['street'];
+
+            $bodyStreetSplitter = json_encode([
+                'jsonrpc' => '2.0',
+                'id'      => 1,
+                'method'  => 'splitStreet',
+                'params'  => [
+                    'formatCountry' => $countryCode,
+                    'language'      => $countryCode,
+                    'street'        => $streetFull,
+                ],
+            ]);
+
             $responseStreetSplitter = $this->enderecoApi->execute($bodyStreetSplitter);
             if ($responseStreetSplitter) {
                 $responseArrayStreetSplitter = json_decode($responseStreetSplitter, true);
                 $splittedStreet              = $responseArrayStreetSplitter['result']['streetName'];
                 $splittedHouseNumber         = $responseArrayStreetSplitter['result']['houseNumber'];
                 $additionalInfo              = $responseArrayStreetSplitter['result']['additionalInfo'] ?? null;
-                $body                        = '{
-                  "jsonrpc": "2.0",
-                  "id": 1,
-                  "method": "addressCheck",
-                  "params": {
-                    "country": "' . $countryCode . '",
-                    "language": "' . $countryCode . '",
-                    "postCode": "' . $zipCode . '",
-                    "cityName": "' . $city . '",
-                    "street": "' . $splittedStreet . '",
-                    "houseNumber": "' . $splittedHouseNumber . '"
-                  }
-                }';
-                $response                    = $this->enderecoApi->execute($body);
+
+                $body = json_encode([
+                    'jsonrpc' => '2.0',
+                    'id'      => 1,
+                    'method'  => 'addressCheck',
+                    'params'  => [
+                        'country'     => $countryCode,
+                        'language'    => $countryCode,
+                        'postCode'    => $zipCode,
+                        'cityName'    => $city,
+                        'street'      => $splittedStreet,
+                        'houseNumber' => $splittedHouseNumber,
+                    ],
+                ]);
+
+                $response = $this->enderecoApi->execute($body);
                 if ($response) {
                     $response_array = json_decode($response, true);
                     $foundAddresses = $response_array['result']['predictions'];
@@ -169,11 +206,15 @@ class AddressValidation
                         $shippingAddress
                             ->setPostcode($foundAddresses[0]['postCode'])
                             ->setCity($foundAddresses[0]['cityName'])
-                            ->setStreet($foundAddresses[0]['street'] . ' ' . $foundAddresses[0]['houseNumber'] ?? null);
+                            ->setStreet(
+                                ($foundAddresses[0]['street'] ?? '')
+                                . ' '
+                                . ($foundAddresses[0]['houseNumber'] ?? '')
+                            );
 
-                        $order->addCommentToStatusHistory(
-                            'original shipping address was updated to the validated address by system due to config'
-                        );
+                        $order->addCommentToStatusHistory(__(
+                            'Original shipping address was overwritten with the validated address by the system (per module configuration).'
+                        ));
 
                         $this->orderRepository->save($order);
                     }
@@ -223,8 +264,8 @@ class AddressValidation
      */
     private function setAddressValidationStatus($order): void
     {
-        $holdBeforeState  = $order->getHoldBeforeState() ?? $order->getState();
-        $holdBeforeStatus = $order->getHoldBeforeStatus() ?? $order->getStatus();
+        $holdBeforeState  = $order->getHoldBeforeState() ?: $order->getState();
+        $holdBeforeStatus = $order->getHoldBeforeStatus() ?: $order->getStatus();
 
         $order->setHoldBeforeState($holdBeforeState);
         $order->setHoldBeforeStatus($holdBeforeStatus);
@@ -232,7 +273,7 @@ class AddressValidation
         $order->setState('holded');
         $order->setStatus($this->validationStatus);
         $order->addCommentToStatusHistory(
-            'Zurückgestellt wegen Adressprüfung <br> by System',
+            __('Order put on hold for address verification by the system.'),
             $this->validationStatus
         );
         $this->orderRepository->save($order);

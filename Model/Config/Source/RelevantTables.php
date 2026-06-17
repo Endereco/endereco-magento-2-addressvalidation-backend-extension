@@ -3,23 +3,23 @@ declare(strict_types=1);
 
 namespace Parc\AddressValidation\Model\Config\Source;
 
-use Magento\Framework\Option\ArrayInterface;
+use Magento\Framework\Data\OptionSourceInterface;
 
-class Relevanttables implements ArrayInterface
+class RelevantTables implements OptionSourceInterface
 {
-    public function toOptionArray()
+    public function toOptionArray(): array
     {
         return [
             [
-                'label' => 'sales_order_grid',
+                'label' => __('sales_order_grid'),
                 'value' => 'sales_order_grid.entity_id'
             ],
             [
-                'label' => 'sales_order_address',
+                'label' => __('sales_order_address'),
                 'value' => 'sales_order_address.parent_id'
             ],
             [
-                'label' => 'parc_addressvalidation',
+                'label' => __('parc_addressvalidation'),
                 'value' => 'parc_addressvalidation.order_id'
             ]
         ];

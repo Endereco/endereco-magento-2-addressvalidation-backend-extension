@@ -99,11 +99,11 @@ interface AddressValidationInterface
     /**
      * Set orig_zip_code
      *
-     * @param string $origZipCode
+     * @param string|null $origZipCode
      *
      * @return AddressValidationInterface
      */
-    public function setOrigZipCode(string $origZipCode): AddressValidationInterface;
+    public function setOrigZipCode(?string $origZipCode): AddressValidationInterface;
 
     /**
      * Get orig_city
@@ -114,11 +114,11 @@ interface AddressValidationInterface
     /**
      * Set orig_city
      *
-     * @param string $origCity
+     * @param string|null $origCity
      *
      * @return AddressValidationInterface
      */
-    public function setOrigCity(string $origCity): AddressValidationInterface;
+    public function setOrigCity(?string $origCity): AddressValidationInterface;
 
     /**
      * Get orig_street_full
@@ -129,11 +129,11 @@ interface AddressValidationInterface
     /**
      * Set orig_street_full
      *
-     * @param string $origStreetFull
+     * @param string|null $origStreetFull
      *
      * @return AddressValidationInterface
      */
-    public function setOrigStreetFull(string $origStreetFull): AddressValidationInterface;
+    public function setOrigStreetFull(?string $origStreetFull): AddressValidationInterface;
 
     /**
      * Get api_zip_code
@@ -309,11 +309,11 @@ interface AddressValidationInterface
     /**
      * Set edited_by
      *
-     * @param string $editedBy
+     * @param string|null $editedBy
      *
      * @return AddressValidationInterface
      */
-    public function setEditedBy(string $editedBy): AddressValidationInterface;
+    public function setEditedBy(?string $editedBy): AddressValidationInterface;
 
     /**
      * Get edited_at
@@ -324,9 +324,36 @@ interface AddressValidationInterface
     /**
      * Set edited_at
      *
-     * @param string $editedAt
+     * @param string|null $editedAt
      *
      * @return AddressValidationInterface
      */
-    public function setEditedAt(string $editedAt): AddressValidationInterface;
+    public function setEditedAt(?string $editedAt): AddressValidationInterface;
+
+    /**
+     * Resolve the manual override if set, else the API value.
+     *
+     * @return string|null
+     */
+    public function getResolvedZipCode(): ?string;
+
+    /**
+     * @return string|null
+     */
+    public function getResolvedCity(): ?string;
+
+    /**
+     * @return string|null
+     */
+    public function getResolvedStreet(): ?string;
+
+    /**
+     * @return string|null
+     */
+    public function getResolvedHouseNumber(): ?string;
+
+    /**
+     * @return string|null
+     */
+    public function getResolvedAdditionalInformation(): ?string;
 }

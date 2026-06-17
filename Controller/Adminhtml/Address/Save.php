@@ -25,16 +25,6 @@ class Save extends Action implements HttpPostActionInterface
     protected AddressValidationRepository $addressValidationRepository;
 
     /**
-     * @var ManagerInterface
-     */
-    protected $messageManager;
-
-    /**
-     * @var RedirectFactory
-     */
-    protected $resultRedirectFactory;
-
-    /**
      * @var BackendAuthSession
      */
     protected BackendAuthSession $backendAuthSession;
@@ -104,6 +94,9 @@ class Save extends Action implements HttpPostActionInterface
                 $this->messageManager->addErrorMessage(__('Please fill out all the address fields!'));
             } else {
                 try {
+                    // Persist manu_* on the validation record first so the
+                    // unhold plugin and CSV export see the same values.
+                    $this->addressValidationRepository->saveNewValues($params);
                     $this->updateShippingAddress($params);
                     $this->messageManager
                         ->addSuccessMessage(__('The validated address was successfully saved as shipping address.'));
@@ -156,7 +149,7 @@ class Save extends Action implements HttpPostActionInterface
         $shippingAddress = $order->getShippingAddress();
 
         if (!$shippingAddress) {
-            throw new Exception('Shipping address not found.');
+            throw new LocalizedException(__('Shipping address not found.'));
         }
 
         $shippingAddress
@@ -164,7 +157,9 @@ class Save extends Action implements HttpPostActionInterface
             ->setCity($values['city'])
             ->setStreet($values['street'] . ' ' . $values['houseNumber']);
 
-        $order->addCommentToStatusHistory('original shipping address was updated by ' . $values['edited_by']);
+        $order->addCommentToStatusHistory(
+            __('Original shipping address was updated by %1.', $values['edited_by'])
+        );
 
         $this->orderRepository->save($order);
     }
@@ -201,7 +196,9 @@ class Save extends Action implements HttpPostActionInterface
             ->setCity($addressValidation->getOrigCity())
             ->setStreet($addressValidation->getOrigStreetFull());
 
-        $order->addCommentToStatusHistory('original shipping address was restored by ' . $values['edited_by']);
+        $order->addCommentToStatusHistory(
+            __('Original shipping address was restored by %1.', $values['edited_by'])
+        );
 
         $this->orderRepository->save($order);
     }

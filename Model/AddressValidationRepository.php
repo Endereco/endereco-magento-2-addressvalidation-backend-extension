@@ -99,7 +99,7 @@ class AddressValidationRepository implements AddressValidationRepositoryInterfac
         $this->scopeConfig                        = $scopeConfig;
         $this->orderRepository                    = $orderRepository;
 
-        $this->overwriteOriginal = $this->scopeConfig->getValue('parc_addressvalidation/general/overwriteoriginal');
+        $this->overwriteOriginal = (string)$this->scopeConfig->getValue('parc_addressvalidation/general/overwriteoriginal');
     }
 
     /**
@@ -190,16 +190,30 @@ class AddressValidationRepository implements AddressValidationRepositoryInterfac
     }
 
     /**
-     * @param $orderId
-     *
-     * @return AddressValidationInterface
+     * @inheritDoc
      */
-    public function getByOrderId($orderId): AddressValidationInterface
+    public function getByOrderId(int $orderId): AddressValidationInterface
+    {
+        $addressValidation = $this->getByOrderIdOrNull($orderId);
+        if ($addressValidation === null) {
+            throw new NoSuchEntityException(__(
+                'No address_validation record exists for order id "%1".',
+                $orderId
+            ));
+        }
+
+        return $addressValidation;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getByOrderIdOrNull(int $orderId): ?AddressValidationInterface
     {
         $addressValidation = $this->addressValidationFactory->create();
         $this->resource->load($addressValidation, $orderId, 'order_id');
 
-        return $addressValidation;
+        return $addressValidation->getId() ? $addressValidation : null;
     }
 
     /**
@@ -254,18 +268,19 @@ class AddressValidationRepository implements AddressValidationRepositoryInterfac
             $order           = $this->orderRepository->get($addressValidation->getOrderId());
             $shippingAddress = $order->getShippingAddress();
             // set validated address as orig. shipping address if configuration is enabled
-            $street      = $addressValidation->getManuStreet() ?? $addressValidation->getApiStreet();
-            $houseNumber = $addressValidation->getManuHouseNumber() ?? $addressValidation->getApiHouseNumber();
             $shippingAddress
-                ->setPostcode($addressValidation->getManuZipCode() ?? $addressValidation->getApiZipCode())
-                ->setCity($addressValidation->getManuCity() ?? $addressValidation->getApiCity())
-                ->setStreet($street . ' ' . $houseNumber);
+                ->setPostcode($addressValidation->getResolvedZipCode())
+                ->setCity($addressValidation->getResolvedCity())
+                ->setStreet(
+                    $addressValidation->getResolvedStreet()
+                    . ' '
+                    . $addressValidation->getResolvedHouseNumber()
+                );
 
-            $order->addCommentToStatusHistory(
-                'the original delivery address was updated by the system to the address verified by ' .
-                $values['edited_by'] .
-                ' due to the config'
-            );
+            $order->addCommentToStatusHistory(__(
+                'Original delivery address was overwritten by the system with the address verified by %1 (per module configuration).',
+                $values['edited_by']
+            ));
 
             $this->orderRepository->save($order);
         }

@@ -58,12 +58,12 @@ class AddressValidation extends Template
         return $result;
     }
 
-    public function getValidatedAddress(): AddressValidationInterface
+    public function getValidatedAddress(): ?AddressValidationInterface
     {
         $order   = $this->getOrder();
-        $orderId = $order->getEntityId();
+        $orderId = (int)$order->getEntityId();
 
-        return $this->addressValidationRepository->getByOrderId($orderId);
+        return $this->addressValidationRepository->getByOrderIdOrNull($orderId);
     }
 
     public function setOrder(Order $order): static
