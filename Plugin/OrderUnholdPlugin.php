@@ -80,8 +80,11 @@ class OrderUnholdPlugin
                 return $result;
             }
 
-            $adminUser  = $this->authSession->getUser()->getUserName();
-            $streetFull = $validatedAddress->getResolvedStreet() . ' ' . $validatedAddress->getResolvedHouseNumber();
+            $adminUser   = $this->authSession->getUser()->getUserName();
+            $streetLines = array_filter([
+                $validatedAddress->getResolvedStreet() . ' ' . $validatedAddress->getResolvedHouseNumber(),
+                $validatedAddress->getResolvedAdditionalInformation() ?? '',
+            ]);
 
             $order           = $this->orderRepository->get($orderId);
             $shippingAddress = $order->getShippingAddress();
@@ -89,7 +92,7 @@ class OrderUnholdPlugin
             $shippingAddress
                 ->setPostcode($validatedAddress->getResolvedZipCode())
                 ->setCity($validatedAddress->getResolvedCity())
-                ->setStreet($streetFull);
+                ->setStreet(array_values($streetLines));
 
             $order->addCommentToStatusHistory(__(
                 'Order was resumed by %1 and the validated address was set as shipping address (due to module config value)',

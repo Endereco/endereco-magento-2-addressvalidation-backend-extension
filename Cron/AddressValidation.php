@@ -203,14 +203,14 @@ class AddressValidation
                         $this->setAddressValidationStatus($order);
                     } elseif ($this->overwriteOriginal) {
                         // set validated address as orig. shipping address if configuration is enabled
+                        $streetLines = array_filter([
+                            ($foundAddresses[0]['street'] ?? '') . ' ' . ($foundAddresses[0]['houseNumber'] ?? ''),
+                            $additionalInfo ?? '',
+                        ]);
                         $shippingAddress
                             ->setPostcode($foundAddresses[0]['postCode'])
                             ->setCity($foundAddresses[0]['cityName'])
-                            ->setStreet(
-                                ($foundAddresses[0]['street'] ?? '')
-                                . ' '
-                                . ($foundAddresses[0]['houseNumber'] ?? '')
-                            );
+                            ->setStreet(array_values($streetLines));
 
                         $order->addCommentToStatusHistory(__(
                             'Original shipping address was overwritten with the validated address by the system (per module configuration).'
