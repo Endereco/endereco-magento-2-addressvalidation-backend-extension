@@ -162,6 +162,7 @@ class AddressValidation
                     'formatCountry' => $countryCode,
                     'language'      => $countryCode,
                     'street'        => $streetFull,
+                    'additionalInfo' => '',
                 ],
             ]);
 
