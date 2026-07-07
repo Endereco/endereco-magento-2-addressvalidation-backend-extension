@@ -152,10 +152,14 @@ class Save extends Action implements HttpPostActionInterface
             throw new LocalizedException(__('Shipping address not found.'));
         }
 
+        $streetLines = array_filter([
+            $values['street'] . ' ' . $values['houseNumber'],
+            $values['additionalInformation'] ?? '',
+        ]);
         $shippingAddress
             ->setPostcode($values['zipCode'])
             ->setCity($values['city'])
-            ->setStreet($values['street'] . ' ' . $values['houseNumber']);
+            ->setStreet(array_values($streetLines));
 
         $order->addCommentToStatusHistory(
             __('Original shipping address was updated by %1.', $values['edited_by'])
