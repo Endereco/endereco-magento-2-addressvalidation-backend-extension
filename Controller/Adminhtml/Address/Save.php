@@ -154,7 +154,7 @@ class Save extends Action implements HttpPostActionInterface
 
         $streetLines = array_filter([
             $values['street'] . ' ' . $values['houseNumber'],
-            $values['additionalInformation'] ?? '',
+            $values['additionalInfo'] ?? '',
         ]);
         $shippingAddress
             ->setPostcode($values['zipCode'])
