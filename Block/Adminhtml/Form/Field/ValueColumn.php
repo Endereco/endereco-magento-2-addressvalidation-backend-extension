@@ -91,6 +91,10 @@ class ValueColumn extends Select
             [
                 'value' => 'val_additional_information',
                 'label' => 'validated additional info'
+            ],
+            [
+                'value' => 'val_subdivision_code',
+                'label' => 'validated region (ISO 3166-2)'
             ]
         ];
 

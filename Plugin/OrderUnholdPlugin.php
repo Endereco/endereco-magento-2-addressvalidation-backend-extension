@@ -10,6 +10,7 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Backend\Model\Auth\Session as BackendAuthSession;
 use Parc\AddressValidation\Model\AddressValidationRepository;
+use Parc\AddressValidation\Model\RegionResolver;
 use Magento\Framework\Message\ManagerInterface;
 
 class OrderUnholdPlugin
@@ -42,11 +43,17 @@ class OrderUnholdPlugin
     protected ManagerInterface $messageManager;
 
     /**
+     * @var RegionResolver
+     */
+    protected RegionResolver $regionResolver;
+
+    /**
      * @param OrderRepositoryInterface    $orderRepository
      * @param ScopeConfigInterface        $scopeConfig
      * @param BackendAuthSession          $authSession
      * @param AddressValidationRepository $addressValidationRepository
      * @param ManagerInterface            $messageManager
+     * @param RegionResolver              $regionResolver
      */
     public function __construct(
         OrderRepositoryInterface    $orderRepository,
@@ -54,12 +61,14 @@ class OrderUnholdPlugin
         BackendAuthSession          $authSession,
         AddressValidationRepository $addressValidationRepository,
         ManagerInterface            $messageManager,
+        RegionResolver              $regionResolver,
     ) {
         $this->orderRepository             = $orderRepository;
         $this->scopeConfig                 = $scopeConfig;
         $this->authSession                 = $authSession;
         $this->addressValidationRepository = $addressValidationRepository;
         $this->messageManager              = $messageManager;
+        $this->regionResolver              = $regionResolver;
     }
 
     public function afterUnHold(OrderManagementInterface $subject, $result, $orderId)
@@ -103,6 +112,7 @@ class OrderUnholdPlugin
                 ->setPostcode($validatedAddress->getResolvedZipCode())
                 ->setCity($validatedAddress->getResolvedCity())
                 ->setStreet(array_values($streetLines));
+            $this->regionResolver->applyRegion($shippingAddress, $validatedAddress->getResolvedRegionId());
 
             $order->addCommentToStatusHistory(__(
                 'Order was resumed by %1 and the validated address was set as shipping address (due to module config value)',

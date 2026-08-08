@@ -15,6 +15,9 @@ if ($addressValidation !== null) {
     $zipCode = $addressValidation->getResolvedZipCode();
     $city = $addressValidation->getResolvedCity();
     $additionalInfo = $addressValidation->getResolvedAdditionalInformation();
+    $regionId = $addressValidation->getResolvedRegionId();
+    $countryId = (string)$block->getOrder()->getShippingAddress()->getCountryId();
+    $regionOptions = $block->getRegionOptions($countryId);
     ?>
     <section class="admin__page-section">
         <div class="admin__page-section-title">
@@ -53,6 +56,18 @@ if ($addressValidation !== null) {
                     <label for="city" class="address-label"><?= $block->escapeHtml(__('City')); ?></label>
                     <input type="text" id="city" name="city" class="address-input"
                            value="<?= $block->escapeHtml($city); ?>">
+                </p>
+                <p>
+                    <label for="regionId" class="address-label"><?= $block->escapeHtml(__('Region')); ?></label>
+                    <select id="regionId" name="regionId" class="address-input">
+                        <option value=""><?= $block->escapeHtml(__('-- Please select --')); ?></option>
+                        <?php foreach ($regionOptions as $optionRegionId => $optionRegionName): ?>
+                            <option value="<?= $block->escapeHtml((string)$optionRegionId); ?>"
+                                <?= $optionRegionId === $regionId ? 'selected="selected"' : ''; ?>>
+                                <?= $block->escapeHtml($optionRegionName); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
                 </p>
                 <p class="textarea-container">
                     <label for="additionalInfo"

@@ -29,6 +29,7 @@ class CreateAddressCsv extends Action
         'street',
         'house_number',
         'additional_information',
+        'subdivision_code',
     ];
 
     /**
@@ -38,9 +39,10 @@ class CreateAddressCsv extends Action
      * because the original address is stored as a single street string.
      */
     private const ORIG_FALLBACK_COLUMNS = [
-        'zip_code' => 'orig_zip_code',
-        'city'     => 'orig_city',
-        'street'   => 'orig_street_full',
+        'zip_code'         => 'orig_zip_code',
+        'city'             => 'orig_city',
+        'street'           => 'orig_street_full',
+        'subdivision_code' => 'orig_subdivision_code',
     ];
 
 

@@ -16,17 +16,23 @@ interface AddressValidationInterface
     public const ORIG_ZIP_CODE               = 'orig_zip_code';
     public const ORIG_CITY                   = 'orig_city';
     public const ORIG_STREET_FULL            = 'orig_street_full';
+    public const ORIG_REGION_ID              = 'orig_region_id';
+    public const ORIG_SUBDIVISION_CODE       = 'orig_subdivision_code';
     public const API_ZIP_CODE                = 'api_zip_code';
     public const API_CITY                    = 'api_city';
     public const API_STREET                  = 'api_street';
     public const API_HOUSE_NUMBER            = 'api_house_number';
     public const API_ADDITIONAL_INFORMATION  = 'api_additional_information';
+    public const API_REGION_ID               = 'api_region_id';
+    public const API_SUBDIVISION_CODE        = 'api_subdivision_code';
     public const STATUS_CODES                = 'status_codes';
     public const MANU_ZIP_CODE               = 'manu_zip_code';
     public const MANU_CITY                   = 'manu_city';
     public const MANU_STREET                 = 'manu_street';
     public const MANU_HOUSE_NUMBER           = 'manu_house_number';
     public const MANU_ADDITIONAL_INFORMATION = 'manu_additional_information';
+    public const MANU_REGION_ID              = 'manu_region_id';
+    public const MANU_SUBDIVISION_CODE       = 'manu_subdivision_code';
     public const EDITED_BY                   = 'edited_by';
     public const EDITED_AT                   = 'edited_at';
 
@@ -136,6 +142,36 @@ interface AddressValidationInterface
     public function setOrigStreetFull(?string $origStreetFull): AddressValidationInterface;
 
     /**
+     * Get orig_region_id
+     * @return int|null
+     */
+    public function getOrigRegionId(): ?int;
+
+    /**
+     * Set orig_region_id
+     *
+     * @param int|null $origRegionId
+     *
+     * @return AddressValidationInterface
+     */
+    public function setOrigRegionId(?int $origRegionId): AddressValidationInterface;
+
+    /**
+     * Get orig_subdivision_code
+     * @return string|null
+     */
+    public function getOrigSubdivisionCode(): ?string;
+
+    /**
+     * Set orig_subdivision_code
+     *
+     * @param string|null $origSubdivisionCode
+     *
+     * @return AddressValidationInterface
+     */
+    public function setOrigSubdivisionCode(?string $origSubdivisionCode): AddressValidationInterface;
+
+    /**
      * Get api_zip_code
      * @return string|null
      */
@@ -209,6 +245,36 @@ interface AddressValidationInterface
      * @return AddressValidationInterface
      */
     public function setApiAdditionalInformation(?string $apiAdditionalInformation): AddressValidationInterface;
+
+    /**
+     * Get api_region_id
+     * @return int|null
+     */
+    public function getApiRegionId(): ?int;
+
+    /**
+     * Set api_region_id
+     *
+     * @param int|null $apiRegionId
+     *
+     * @return AddressValidationInterface
+     */
+    public function setApiRegionId(?int $apiRegionId): AddressValidationInterface;
+
+    /**
+     * Get api_subdivision_code
+     * @return string|null
+     */
+    public function getApiSubdivisionCode(): ?string;
+
+    /**
+     * Set api_subdivision_code
+     *
+     * @param string|null $apiSubdivisionCode
+     *
+     * @return AddressValidationInterface
+     */
+    public function setApiSubdivisionCode(?string $apiSubdivisionCode): AddressValidationInterface;
 
     /**
      * Get status_codes
@@ -301,6 +367,36 @@ interface AddressValidationInterface
     public function setManuAdditionalInformation(?string $manuAdditionalInformation): AddressValidationInterface;
 
     /**
+     * Get manu_region_id
+     * @return int|null
+     */
+    public function getManuRegionId(): ?int;
+
+    /**
+     * Set manu_region_id
+     *
+     * @param int|null $manuRegionId
+     *
+     * @return AddressValidationInterface
+     */
+    public function setManuRegionId(?int $manuRegionId): AddressValidationInterface;
+
+    /**
+     * Get manu_subdivision_code
+     * @return string|null
+     */
+    public function getManuSubdivisionCode(): ?string;
+
+    /**
+     * Set manu_subdivision_code
+     *
+     * @param string|null $manuSubdivisionCode
+     *
+     * @return AddressValidationInterface
+     */
+    public function setManuSubdivisionCode(?string $manuSubdivisionCode): AddressValidationInterface;
+
+    /**
      * Get edited_by
      * @return string|null
      */
@@ -356,4 +452,14 @@ interface AddressValidationInterface
      * @return string|null
      */
     public function getResolvedAdditionalInformation(): ?string;
+
+    /**
+     * @return int|null
+     */
+    public function getResolvedRegionId(): ?int;
+
+    /**
+     * @return string|null
+     */
+    public function getResolvedSubdivisionCode(): ?string;
 }

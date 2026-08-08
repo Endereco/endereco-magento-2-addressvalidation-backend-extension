@@ -71,6 +71,11 @@ class AddressValidationRepository implements AddressValidationRepositoryInterfac
     protected OrderRepositoryInterface $orderRepository;
 
     /**
+     * @var RegionResolver
+     */
+    protected RegionResolver $regionResolver;
+
+    /**
      * @param ResourceAddressValidation                      $resource
      * @param AddressValidationInterfaceFactory              $addressValidationFactory
      * @param AddressValidationCollectionFactory             $addressValidationCollectionFactory
@@ -79,6 +84,7 @@ class AddressValidationRepository implements AddressValidationRepositoryInterfac
      * @param CountryFactory                                 $countryFactory
      * @param ScopeConfigInterface                           $scopeConfig
      * @param OrderRepositoryInterface                       $orderRepository
+     * @param RegionResolver                                 $regionResolver
      */
     public function __construct(
         ResourceAddressValidation                      $resource,
@@ -88,7 +94,8 @@ class AddressValidationRepository implements AddressValidationRepositoryInterfac
         CollectionProcessorInterface                   $collectionProcessor,
         CountryFactory                                 $countryFactory,
         ScopeConfigInterface                           $scopeConfig,
-        OrderRepositoryInterface                       $orderRepository
+        OrderRepositoryInterface                       $orderRepository,
+        RegionResolver                                 $regionResolver
     ) {
         $this->resource                           = $resource;
         $this->addressValidationFactory           = $addressValidationFactory;
@@ -98,6 +105,7 @@ class AddressValidationRepository implements AddressValidationRepositoryInterfac
         $this->countryFactory                     = $countryFactory;
         $this->scopeConfig                        = $scopeConfig;
         $this->orderRepository                    = $orderRepository;
+        $this->regionResolver                     = $regionResolver;
 
         $this->overwriteOriginal = (string)$this->scopeConfig->getValue('parc_addressvalidation/general/overwriteoriginal');
     }
@@ -257,6 +265,17 @@ class AddressValidationRepository implements AddressValidationRepositoryInterfac
             }
         }
 
+        // regionId is int|null on the model, so it can't go through the generic
+        // string-based $fields loop above (would break under strict_types).
+        $regionId = ($values['regionId'] ?? '') !== '' ? (int)$values['regionId'] : null;
+        if ($addressValidation->getApiRegionId() !== $regionId) {
+            // manu_subdivision_code is never entered directly (the admin picks a region
+            // from a dropdown, not an ISO code) - keep it derived from manu_region_id
+            // instead, the same way orig_subdivision_code is derived from orig_region_id.
+            $addressValidation->setManuRegionId($regionId);
+            $addressValidation->setManuSubdivisionCode($this->regionResolver->getSubdivisionCode($regionId));
+        }
+
         $addressValidation
             ->setEditedBy($values['edited_by'])
             ->setEditedAt(date('Y-m-d H:i:s'));
@@ -276,6 +295,7 @@ class AddressValidationRepository implements AddressValidationRepositoryInterfac
                     . ' '
                     . $addressValidation->getResolvedHouseNumber()
                 );
+            $this->regionResolver->applyRegion($shippingAddress, $addressValidation->getResolvedRegionId());
 
             $order->addCommentToStatusHistory(__(
                 'Original delivery address was overwritten by the system with the address verified by %1 (per module configuration).',

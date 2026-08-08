@@ -13,6 +13,7 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Lock\LockManagerInterface;
 use Magento\Sales\Model\OrderRepository;
 use Parc\AddressValidation\Model\AddressValidationFactory;
+use Parc\AddressValidation\Model\RegionResolver;
 use Parc\AddressValidation\Service\EnderecoApi;
 use Parc\AddressValidation\Model\AddressValidationRepository;
 use Psr\Log\LoggerInterface;
@@ -77,6 +78,11 @@ class AddressValidation
     protected LoggerInterface $logger;
 
     /**
+     * @var RegionResolver
+     */
+    protected RegionResolver $regionResolver;
+
+    /**
      * @param ResourceConnection          $resourceConnection
      * @param OrderRepository             $orderRepository
      * @param EnderecoApi                 $enderecoApi
@@ -86,6 +92,7 @@ class AddressValidation
      * @param ScopeConfigInterface        $scopeConfig
      * @param LockManagerInterface        $lockManager
      * @param LoggerInterface             $logger
+     * @param RegionResolver              $regionResolver
      */
     public function __construct(
         ResourceConnection          $resourceConnection,
@@ -96,7 +103,8 @@ class AddressValidation
         AddressValidationRepository $addressValidationRepository,
         ScopeConfigInterface        $scopeConfig,
         LockManagerInterface        $lockManager,
-        LoggerInterface             $logger
+        LoggerInterface             $logger,
+        RegionResolver              $regionResolver
     ) {
         $this->resourceConnection          = $resourceConnection;
         $this->orderRepository             = $orderRepository;
@@ -107,6 +115,7 @@ class AddressValidation
         $this->scopeConfig                 = $scopeConfig;
         $this->lockManager                 = $lockManager;
         $this->logger                      = $logger;
+        $this->regionResolver              = $regionResolver;
 
         $this->overwriteOriginal   = (string)$this->scopeConfig->getValue('parc_addressvalidation/general/overwriteoriginal');
         $this->orderStatus         = (string)$this->scopeConfig->getValue('parc_addressvalidation/general/orderstatus');
@@ -153,6 +162,8 @@ class AddressValidation
             $city            = (string)$shippingAddress['city'];
             $countryCode     = (string)$shippingAddress['country_id'];
             $streetFull      = (string)$shippingAddress['street'];
+            $regionId        = $shippingAddress->getRegionId() ? (int)$shippingAddress->getRegionId() : null;
+            $subdivisionCode = $this->regionResolver->getSubdivisionCode($regionId);
 
             $bodyStreetSplitter = json_encode([
                 'jsonrpc' => '2.0',
@@ -184,6 +195,11 @@ class AddressValidation
                         'cityName'    => $city,
                         'street'      => $splittedStreet,
                         'houseNumber' => $splittedHouseNumber,
+                        // Empty string, not omitted: like splitStreet's additionalInfo above,
+                        // the API only includes subdivisionCode in the response predictions
+                        // (and activates the subdivision_code_* status codes) when this key
+                        // is present in the request at all - confirmed against the live API.
+                        'subdivisionCode' => '',
                     ],
                 ]);
 
@@ -193,6 +209,8 @@ class AddressValidation
                     $foundAddresses = $response_array['result']['predictions'];
                     $resultStatus   = $response_array['result']['status'];
                     $criticalStatus = array_intersect($this->statusCodes, $resultStatus);
+                    $apiSubdivisionCode = $foundAddresses[0]['subdivisionCode'] ?? null;
+                    $apiRegionId        = $this->regionResolver->resolveRegionId($countryCode, $apiSubdivisionCode);
                     // address needs to be reviewed because either
                     // 1 -> response/status code is identified as critical
                     // 2 -> it contains additional infos and the config is set to always check add. infos
@@ -212,6 +230,7 @@ class AddressValidation
                             ->setPostcode($foundAddresses[0]['postCode'])
                             ->setCity($foundAddresses[0]['cityName'])
                             ->setStreet(array_values($streetLines));
+                        $this->regionResolver->applyRegion($shippingAddress, $apiRegionId);
 
                         $order->addCommentToStatusHistory(__(
                             'Original shipping address was overwritten with the validated address by the system (per module configuration).'
@@ -226,19 +245,23 @@ class AddressValidation
                                     ->setOrigZipCode($zipCode)
                                     ->setOrigCity($city)
                                     ->setOrigStreetFull($streetFull)
+                                    ->setOrigRegionId($regionId)
+                                    ->setOrigSubdivisionCode($subdivisionCode)
                                     ->setApiZipCode($foundAddresses[0]['postCode'] ?? null)
                                     ->setApiCity($foundAddresses[0]['cityName'] ?? null)
                                     ->setApiStreet($foundAddresses[0]['street'] ?? null)
                                     ->setApiHouseNumber($foundAddresses[0]['houseNumber'] ?? null)
                                     ->setApiAdditionalInformation($additionalInfo)
+                                    ->setApiRegionId($apiRegionId)
+                                    ->setApiSubdivisionCode($apiSubdivisionCode)
                                     ->setStatusCodes(implode(', ', $resultStatus));
                     $this->addressValidationRepository->save($verifiedAddress);
                 } else {
-                    $this->setOrigData($order, $zipCode, $city, $streetFull);
+                    $this->setOrigData($order, $zipCode, $city, $streetFull, $regionId, $subdivisionCode);
                     $this->setAddressValidationStatus($order);
                 }
             } else {
-                $this->setOrigData($order, $zipCode, $city, $streetFull);
+                $this->setOrigData($order, $zipCode, $city, $streetFull, $regionId, $subdivisionCode);
                 $this->setAddressValidationStatus($order);
             }
         }
@@ -280,7 +303,7 @@ class AddressValidation
         $this->orderRepository->save($order);
     }
 
-    private function setOrigData($order, $zipCode, $city, $streetFull)
+    private function setOrigData($order, $zipCode, $city, $streetFull, $regionId = null, $subdivisionCode = null)
     {
         // save original address data in validation table
         $addressData = $this->addressValidationFactory->create();
@@ -288,7 +311,9 @@ class AddressValidation
                     ->setOrderIncrementId($order->getIncrementId())
                     ->setOrigZipCode($zipCode)
                     ->setOrigCity($city)
-                    ->setOrigStreetFull($streetFull);
+                    ->setOrigStreetFull($streetFull)
+                    ->setOrigRegionId($regionId)
+                    ->setOrigSubdivisionCode($subdivisionCode);
         $this->addressValidationRepository->save($addressData);
     }
 }

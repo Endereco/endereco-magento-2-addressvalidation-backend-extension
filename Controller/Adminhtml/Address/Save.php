@@ -12,6 +12,7 @@ use Magento\Framework\Controller\Result\Redirect;
 use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Parc\AddressValidation\Model\AddressValidationRepository;
+use Parc\AddressValidation\Model\RegionResolver;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\Controller\Result\RedirectFactory;
 use Magento\Backend\Model\Auth\Session as BackendAuthSession;
@@ -35,12 +36,18 @@ class Save extends Action implements HttpPostActionInterface
     protected OrderRepositoryInterface $orderRepository;
 
     /**
+     * @var RegionResolver
+     */
+    protected RegionResolver $regionResolver;
+
+    /**
      * @param AddressValidationRepository $addressValidationRepository
      * @param ManagerInterface            $messageManager
      * @param RedirectFactory             $resultRedirectFactory
      * @param Context                     $context
      * @param BackendAuthSession          $backendAuthSession
      * @param OrderRepositoryInterface    $orderRepository
+     * @param RegionResolver              $regionResolver
      */
     public function __construct(
         AddressValidationRepository $addressValidationRepository,
@@ -48,13 +55,15 @@ class Save extends Action implements HttpPostActionInterface
         RedirectFactory             $resultRedirectFactory,
         Context                     $context,
         BackendAuthSession          $backendAuthSession,
-        OrderRepositoryInterface    $orderRepository
+        OrderRepositoryInterface    $orderRepository,
+        RegionResolver              $regionResolver
     ) {
         $this->addressValidationRepository = $addressValidationRepository;
         $this->messageManager              = $messageManager;
         $this->resultRedirectFactory       = $resultRedirectFactory;
         $this->backendAuthSession          = $backendAuthSession;
         $this->orderRepository             = $orderRepository;
+        $this->regionResolver              = $regionResolver;
         parent::__construct($context);
     }
 
@@ -160,6 +169,10 @@ class Save extends Action implements HttpPostActionInterface
             ->setPostcode($values['zipCode'])
             ->setCity($values['city'])
             ->setStreet(array_values($streetLines));
+        $this->regionResolver->applyRegion(
+            $shippingAddress,
+            ($values['regionId'] ?? '') !== '' ? (int)$values['regionId'] : null
+        );
 
         $order->addCommentToStatusHistory(
             __('Original shipping address was updated by %1.', $values['edited_by'])
@@ -181,11 +194,15 @@ class Save extends Action implements HttpPostActionInterface
             ->setApiStreet(null)
             ->setApiHouseNumber(null)
             ->setApiAdditionalInformation(null)
+            ->setApiRegionId(null)
+            ->setApiSubdivisionCode(null)
             ->setManuZipCode(null)
             ->setManuCity(null)
             ->setManuStreet(null)
             ->setManuHouseNumber(null)
             ->setManuAdditionalInformation(null)
+            ->setManuRegionId(null)
+            ->setManuSubdivisionCode(null)
             ->setEditedBy($values['edited_by'])
             ->setEditedAt(date('Y-m-d H:i:s'));
 
@@ -199,6 +216,7 @@ class Save extends Action implements HttpPostActionInterface
             ->setPostcode($addressValidation->getOrigZipCode())
             ->setCity($addressValidation->getOrigCity())
             ->setStreet($addressValidation->getOrigStreetFull());
+        $this->regionResolver->applyRegion($shippingAddress, $addressValidation->getOrigRegionId());
 
         $order->addCommentToStatusHistory(
             __('Original shipping address was restored by %1.', $values['edited_by'])

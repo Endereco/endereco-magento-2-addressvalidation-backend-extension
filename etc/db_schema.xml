@@ -11,17 +11,23 @@
     <column name="orig_zip_code" nullable="true" xsi:type="varchar" comment="original shipping data" length="255"/>
     <column name="orig_city" nullable="true" xsi:type="varchar" comment="original shipping data" length="255"/>
     <column name="orig_street_full" nullable="true" xsi:type="varchar" comment="original shipping data" length="255"/>
+    <column name="orig_region_id" nullable="true" xsi:type="int" unsigned="true" comment="original shipping data"/>
+    <column name="orig_subdivision_code" nullable="true" xsi:type="varchar" comment="original shipping data, ISO 3166-2" length="16"/>
     <column name="api_zip_code" nullable="true" xsi:type="varchar" comment="suggestion from api" length="255"/>
     <column name="api_city" nullable="true" xsi:type="varchar" comment="suggestion from api" length="255"/>
     <column name="api_street" nullable="true" xsi:type="varchar" comment="suggestion from api" length="255"/>
     <column name="api_house_number" nullable="true" xsi:type="varchar" comment="suggestion from api" length="255"/>
     <column name="api_additional_information" nullable="true" xsi:type="text" comment="suggestion from api"/>
+    <column name="api_region_id" nullable="true" xsi:type="int" unsigned="true" comment="suggestion from api"/>
+    <column name="api_subdivision_code" nullable="true" xsi:type="varchar" comment="suggestion from api, ISO 3166-2" length="16"/>
     <column name="status_codes" nullable="true" xsi:type="text" comment="suggestion from api"/>
     <column name="manu_zip_code" nullable="true" xsi:type="varchar" comment="manual correction" length="255"/>
     <column name="manu_city" nullable="true" xsi:type="varchar" comment="manual correction" length="255"/>
     <column name="manu_street" nullable="true" xsi:type="varchar" comment="manual correction" length="255"/>
     <column name="manu_house_number" nullable="true" xsi:type="varchar" comment="manual correction" length="255"/>
     <column name="manu_additional_information" nullable="true" xsi:type="text" comment="manual correction"/>
+    <column name="manu_region_id" nullable="true" xsi:type="int" unsigned="true" comment="manual correction"/>
+    <column name="manu_subdivision_code" nullable="true" xsi:type="varchar" comment="manual correction, ISO 3166-2" length="16"/>
     <column name="edited_by" nullable="true" xsi:type="text"/>
     <column name="edited_at" xsi:type="timestamp" nullable="true"/>
   </table>
