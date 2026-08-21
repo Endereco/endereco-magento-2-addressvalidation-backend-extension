@@ -15,7 +15,8 @@
         "allow-plugins": {
             "magento/magento-composer-installer": true,
             "magento/composer-dependency-version-audit-plugin": false,
-            "laminas/laminas-dependency-plugin": false
+            "laminas/laminas-dependency-plugin": false,
+            "dealerdirect/phpcodesniffer-composer-installer": true
         }
     },
     "require": {
@@ -30,18 +31,58 @@
         "magento/module-store": "*",
         "magento/module-ui": "*"
     },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0 || ^11.0"
+    },
     "repositories": [
         {
             "type": "composer",
             "url": "https://mirror.mage-os.org/"
         }
     ],
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "phpstan": [
+            "vendor/bin/phpstan analyse -c phpstan.2.4.6.neon --memory-limit=-1",
+            "vendor/bin/phpstan analyse -c phpstan.2.4.7.neon --memory-limit=-1",
+            "vendor/bin/phpstan analyse -c phpstan.2.4.8.neon --memory-limit=-1",
+            "vendor/bin/phpstan analyse -c phpstan.2.4.9.neon --memory-limit=-1"
+        ],
+        "cs": "vendor/bin/phpcs --standard=phpcs.xml --extensions=php .",
+        "phpmd": "./check_phpmd.sh",
+        "phpcompat": "bash test_php_versions.sh",
+        "qa": [
+            "rm -rf vendor",
+            "COMPOSER=composer-phpcs.json composer install --prefer-dist --no-progress --no-interaction --quiet",
+            "@cs",
+            "rm -rf vendor",
+            "COMPOSER=composer-phpmd.json composer install --prefer-dist --no-progress --no-interaction --quiet",
+            "@phpmd",
+            "rm -rf vendor",
+            "COMPOSER=composer-phpstan.json composer install --prefer-dist --no-progress --no-interaction --quiet",
+            "@phpstan",
+            "@phpcompat"
+        ],
+        "post-install-cmd": [
+            "chmod +x test_php_versions.sh",
+            "chmod +x check_phpmd.sh"
+        ],
+        "post-update-cmd": [
+            "chmod +x test_php_versions.sh",
+            "chmod +x check_phpmd.sh"
+        ]
+    },
     "autoload": {
         "files": [
             "registration.php"
         ],
         "psr-4": {
             "Parc\\AddressValidation\\": ""
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Parc\\AddressValidation\\Test\\": "Test/"
         }
     }
 }

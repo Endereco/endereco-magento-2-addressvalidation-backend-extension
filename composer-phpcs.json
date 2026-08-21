@@ -1,0 +1,16 @@
+{
+    "name": "parc/module-addressvalidation-phpcs",
+    "description": "PHPCS dependencies for parc/module-addressvalidation",
+    "type": "project",
+    "license": "GPL-3.0",
+    "prefer-stable": true,
+    "require": {
+        "php": "^8.1",
+        "squizlabs/php_codesniffer": "^3.7"
+    },
+    "autoload": {
+        "psr-4": {
+            "Parc\\AddressValidation\\": ""
+        }
+    }
+}

@@ -1,0 +1,362 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Cannot call method setOrder\(\) on Magento\\Framework\\View\\Element\\BlockInterface\|true\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: Block/Adminhtml/AddressValidation.php
+
+		-
+			message: '#^Cannot call method toHtml\(\) on Magento\\Framework\\View\\Element\\BlockInterface\|true\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: Block/Adminhtml/AddressValidation.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Block\\Adminhtml\\AddressValidation\:\:__construct\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: Block/Adminhtml/AddressValidation.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Block\\Adminhtml\\AddressValidation\:\:afterToHtml\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: Block/Adminhtml/AddressValidation.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Block\\Adminhtml\\AddressValidation\:\:afterToHtml\(\) has parameter \$result with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: Block/Adminhtml/AddressValidation.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Block\\Adminhtml\\Form\\Field\\CsvMapping\:\:getValueRenderer\(\) should return Parc\\AddressValidation\\Block\\Adminhtml\\Form\\Field\\ValueColumn but returns Magento\\Framework\\View\\Element\\BlockInterface\.$#'
+			identifier: return.type
+			count: 1
+			path: Block/Adminhtml/Form/Field/CsvMapping.php
+
+		-
+			message: '#^Property Magento\\Config\\Block\\System\\Config\\Form\\Field\\FieldArray\\AbstractFieldArray\:\:\$_addButtonLabel \(string\) does not accept Magento\\Framework\\Phrase\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: Block/Adminhtml/Form/Field/CsvMapping.php
+
+		-
+			message: '#^Property Parc\\AddressValidation\\Block\\Adminhtml\\Form\\Field\\CsvMapping\:\:\$valueRenderer \(Parc\\AddressValidation\\Block\\Adminhtml\\Form\\Field\\ValueColumn\) does not accept Magento\\Framework\\View\\Element\\BlockInterface\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: Block/Adminhtml/Form/Field/CsvMapping.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Block\\Adminhtml\\Form\\Field\\ValueColumn\:\:__construct\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: Block/Adminhtml/Form/Field/ValueColumn.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Block\\Adminhtml\\Form\\Field\\ValueColumn\:\:getSourceOptions\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: Block/Adminhtml/Form/Field/ValueColumn.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Block\\Adminhtml\\Form\\Field\\ValueColumn\:\:setInputId\(\) has parameter \$value with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: Block/Adminhtml/Form/Field/ValueColumn.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Block\\Adminhtml\\Form\\Field\\ValueColumn\:\:setInputName\(\) should return \$this\(Parc\\AddressValidation\\Block\\Adminhtml\\Form\\Field\\ValueColumn\) but returns Parc\\AddressValidation\\Block\\Adminhtml\\Form\\Field\\ValueColumn\.$#'
+			identifier: return.type
+			count: 1
+			path: Block/Adminhtml/Form/Field/ValueColumn.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Block\\Adminhtml\\Order\\View\\Info\:\:__construct\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: Block/Adminhtml/Order/View/Info.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Block\\Adminhtml\\Order\\View\\Info\:\:getCountryname\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: Block/Adminhtml/Order/View/Info.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Block\\Adminhtml\\Order\\View\\Info\:\:getCountryname\(\) has parameter \$countryCode with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: Block/Adminhtml/Order/View/Info.php
+
+		-
+			message: '#^Call to an undefined method Magento\\Sales\\Api\\Data\\OrderInterface\:\:addCommentToStatusHistory\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: Controller/Adminhtml/Address/Save.php
+
+		-
+			message: '#^Call to an undefined method Magento\\Sales\\Api\\Data\\OrderInterface\:\:getShippingAddress\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: Controller/Adminhtml/Address/Save.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Controller\\Adminhtml\\Address\\Save\:\:isAddressValid\(\) has parameter \$params with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: Controller/Adminhtml/Address/Save.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Controller\\Adminhtml\\Address\\Save\:\:restoreOriginalAddress\(\) has parameter \$values with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: Controller/Adminhtml/Address/Save.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Controller\\Adminhtml\\Address\\Save\:\:updateShippingAddress\(\) has parameter \$values with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: Controller/Adminhtml/Address/Save.php
+
+		-
+			message: '#^Parameter \#1 \$message of method Magento\\Framework\\Message\\ManagerInterface\:\:addErrorMessage\(\) expects string, Magento\\Framework\\Phrase given\.$#'
+			identifier: argument.type
+			count: 5
+			path: Controller/Adminhtml/Address/Save.php
+
+		-
+			message: '#^Parameter \#1 \$message of method Magento\\Framework\\Message\\ManagerInterface\:\:addSuccessMessage\(\) expects string, Magento\\Framework\\Phrase given\.$#'
+			identifier: argument.type
+			count: 3
+			path: Controller/Adminhtml/Address/Save.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Controller\\Adminhtml\\Order\\CreateAddressCsv\:\:getDirectDBValue\(\) has parameter \$columnValue with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: Controller/Adminhtml/Order/CreateAddressCsv.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Controller\\Adminhtml\\Order\\CreateAddressCsv\:\:getDirectDBValue\(\) has parameter \$orderId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: Controller/Adminhtml/Order/CreateAddressCsv.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Controller\\Adminhtml\\Order\\CreateAddressCsv\:\:getValidatedDBValue\(\) has parameter \$columnValue with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: Controller/Adminhtml/Order/CreateAddressCsv.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Controller\\Adminhtml\\Order\\CreateAddressCsv\:\:getValidatedDBValue\(\) has parameter \$orderId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: Controller/Adminhtml/Order/CreateAddressCsv.php
+
+		-
+			message: '#^Parameter \#1 \$message of method Magento\\Framework\\Message\\ManagerInterface\:\:addErrorMessage\(\) expects string, Magento\\Framework\\Phrase given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Controller/Adminhtml/Order/CreateAddressCsv.php
+
+		-
+			message: '#^Property Parc\\AddressValidation\\Controller\\Adminhtml\\Order\\CreateAddressCsv\:\:\$tableKeys type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: Controller/Adminhtml/Order/CreateAddressCsv.php
+
+		-
+			message: '#^Call to an undefined method Magento\\Sales\\Api\\Data\\OrderInterface\:\:addCommentToStatusHistory\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: Cron/AddressValidation.php
+
+		-
+			message: '#^Call to an undefined method Magento\\Sales\\Api\\Data\\OrderInterface\:\:getShippingAddress\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: Cron/AddressValidation.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Cron\\AddressValidation\:\:getRelevantOrders\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: Cron/AddressValidation.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Cron\\AddressValidation\:\:setAddressValidationStatus\(\) has parameter \$order with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: Cron/AddressValidation.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Cron\\AddressValidation\:\:setOrigData\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: Cron/AddressValidation.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Cron\\AddressValidation\:\:setOrigData\(\) has parameter \$city with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: Cron/AddressValidation.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Cron\\AddressValidation\:\:setOrigData\(\) has parameter \$order with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: Cron/AddressValidation.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Cron\\AddressValidation\:\:setOrigData\(\) has parameter \$streetFull with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: Cron/AddressValidation.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Cron\\AddressValidation\:\:setOrigData\(\) has parameter \$zipCode with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: Cron/AddressValidation.php
+
+		-
+			message: '#^Property Parc\\AddressValidation\\Cron\\AddressValidation\:\:\$statusCodes type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: Cron/AddressValidation.php
+
+		-
+			message: '#^Call to an undefined method Magento\\Sales\\Api\\Data\\OrderInterface\:\:addCommentToStatusHistory\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: Model/AddressValidationRepository.php
+
+		-
+			message: '#^Call to an undefined method Magento\\Sales\\Api\\Data\\OrderInterface\:\:getShippingAddress\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: Model/AddressValidationRepository.php
+
+		-
+			message: '#^Call to an undefined method Parc\\AddressValidation\\Api\\Data\\AddressValidationInterface\:\:getId\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: Model/AddressValidationRepository.php
+
+		-
+			message: '#^Cannot access offset ''api_additional_information''\|''api_city''\|''api_house_number''\|''api_street''\|''api_zip_code'' on Parc\\AddressValidation\\Api\\Data\\AddressValidationInterface\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: Model/AddressValidationRepository.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Model\\AddressValidationRepository\:\:saveNewValues\(\) has parameter \$values with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: Model/AddressValidationRepository.php
+
+		-
+			message: '#^Parameter \#1 \$id of method Magento\\Sales\\Api\\OrderRepositoryInterface\:\:get\(\) expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Model/AddressValidationRepository.php
+
+		-
+			message: '#^Parameter \#1 \$object of method Magento\\Framework\\Model\\ResourceModel\\Db\\AbstractDb\:\:delete\(\) expects Magento\\Framework\\Model\\AbstractModel, Parc\\AddressValidation\\Api\\Data\\AddressValidationInterface given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Model/AddressValidationRepository.php
+
+		-
+			message: '#^Parameter \#1 \$object of method Magento\\Framework\\Model\\ResourceModel\\Db\\AbstractDb\:\:load\(\) expects Magento\\Framework\\Model\\AbstractModel, Parc\\AddressValidation\\Api\\Data\\AddressValidationInterface given\.$#'
+			identifier: argument.type
+			count: 3
+			path: Model/AddressValidationRepository.php
+
+		-
+			message: '#^Parameter \#1 \$object of method Magento\\Framework\\Model\\ResourceModel\\Db\\AbstractDb\:\:save\(\) expects Magento\\Framework\\Model\\AbstractModel, Parc\\AddressValidation\\Api\\Data\\AddressValidationInterface given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Model/AddressValidationRepository.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Model\\Config\\Source\\RelevantTables\:\:toOptionArray\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: Model/Config/Source/RelevantTables.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Model\\Config\\Source\\StatusCodes\:\:toOptionArray\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: Model/Config/Source/StatusCodes.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Plugin\\CronConfigPlugin\:\:afterGetJobs\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: Plugin/CronConfigPlugin.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Plugin\\CronConfigPlugin\:\:afterGetJobs\(\) has parameter \$result with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: Plugin/CronConfigPlugin.php
+
+		-
+			message: '#^Call to an undefined method Magento\\Sales\\Api\\Data\\OrderInterface\:\:addCommentToStatusHistory\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: Plugin/OrderUnholdPlugin.php
+
+		-
+			message: '#^Call to an undefined method Magento\\Sales\\Api\\Data\\OrderInterface\:\:getShippingAddress\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: Plugin/OrderUnholdPlugin.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Plugin\\OrderUnholdPlugin\:\:afterUnHold\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: Plugin/OrderUnholdPlugin.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Plugin\\OrderUnholdPlugin\:\:afterUnHold\(\) has parameter \$orderId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: Plugin/OrderUnholdPlugin.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Plugin\\OrderUnholdPlugin\:\:afterUnHold\(\) has parameter \$result with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: Plugin/OrderUnholdPlugin.php
+
+		-
+			message: '#^Parameter \#1 \$message of method Magento\\Framework\\Message\\ManagerInterface\:\:addErrorMessage\(\) expects string, Magento\\Framework\\Phrase given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Plugin/OrderUnholdPlugin.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Service\\EnderecoApi\:\:doRequest\(\) has parameter \$body with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: Service/EnderecoApi.php
+
+		-
+			message: '#^Method Parc\\AddressValidation\\Service\\EnderecoApi\:\:execute\(\) has parameter \$body with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: Service/EnderecoApi.php
+
+		-
+			message: '#^Property Parc\\AddressValidation\\Service\\EnderecoApi\:\:\$apiKey has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: Service/EnderecoApi.php
+
