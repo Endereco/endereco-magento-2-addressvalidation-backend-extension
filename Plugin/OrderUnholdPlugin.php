@@ -80,6 +80,16 @@ class OrderUnholdPlugin
                 return $result;
             }
 
+            // Guard: resolved values are null when "Restore orig. shipping address"
+            // was called before unhold (it nulls all api_* and manu_* fields).
+            // Applying them would clear the shipping address to null/whitespace -
+            // skip silently instead, leaving the already-restored original in place.
+            if ($validatedAddress->getResolvedZipCode() === null
+                && $validatedAddress->getResolvedStreet() === null
+                && $validatedAddress->getResolvedCity() === null) {
+                return $result;
+            }
+
             $adminUser   = $this->authSession->getUser()->getUserName();
             $streetLines = array_filter([
                 $validatedAddress->getResolvedStreet() . ' ' . $validatedAddress->getResolvedHouseNumber(),
