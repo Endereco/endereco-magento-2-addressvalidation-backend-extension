@@ -15,4 +15,29 @@
   <type name="Magento\Sales\Api\OrderManagementInterface">
     <plugin name="add_code_on_unhold" type="Parc\AddressValidation\Plugin\OrderUnholdPlugin"/>
   </type>
+
+  <!--
+    Dedicated log file for Endereco API traffic (var/log/endereco_api.log) instead of
+    the shared debug.log, so "Log API Traffic" only produces noise in its own file and
+    doesn't mix customer address payloads into the general debug log other modules
+    also write to.
+  -->
+  <virtualType name="Parc\AddressValidation\Logger\Handler" type="Magento\Framework\Logger\Handler\Base">
+    <arguments>
+      <argument name="fileName" xsi:type="string">/var/log/endereco_api.log</argument>
+    </arguments>
+  </virtualType>
+  <virtualType name="Parc\AddressValidation\Logger\Logger" type="Magento\Framework\Logger\Monolog">
+    <arguments>
+      <argument name="name" xsi:type="string">enderecoApi</argument>
+      <argument name="handlers" xsi:type="array">
+        <item name="default" xsi:type="object">Parc\AddressValidation\Logger\Handler</item>
+      </argument>
+    </arguments>
+  </virtualType>
+  <type name="Parc\AddressValidation\Service\EnderecoApi">
+    <arguments>
+      <argument name="logger" xsi:type="object">Parc\AddressValidation\Logger\Logger</argument>
+    </arguments>
+  </type>
 </config>

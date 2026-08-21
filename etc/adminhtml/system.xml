@@ -52,6 +52,14 @@
             <field id="parc_addressvalidation/general/enable">1</field>
           </depends>
         </field>
+        <field id="log_api_traffic" translate="label comment" type="select" sortOrder="70" showInDefault="1">
+          <label>Log API Traffic</label>
+          <comment>Logs every request/response exchanged with the Endereco API to var/log/endereco_api.log, including the customer's address data. Only enable temporarily for troubleshooting.</comment>
+          <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+          <depends>
+            <field id="parc_addressvalidation/general/enable">1</field>
+          </depends>
+        </field>
       </group>
       <group id="sharpness" translate="label" sortOrder="20" showInDefault="1">
         <label>Sharpness of the Validation</label>
