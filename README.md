@@ -386,3 +386,11 @@ To estimate a safe interval, check how long recent runs take in **System → Act
 ## Support
 
 For questions about the Endereco API or your account: [support@endereco.de](mailto:support@endereco.de)
+
+---
+
+## Contributing
+
+Want to fix a bug or add a feature? See [CONTRIBUTING.md](CONTRIBUTING.md) for branch
+naming, commit message format, and the QA/test tooling (`composer run qa`, `composer run
+serve` for a local Docker playground).
