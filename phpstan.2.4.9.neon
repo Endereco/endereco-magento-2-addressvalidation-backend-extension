@@ -1,0 +1,23 @@
+includes:
+    - ./phpstan-baseline.neon
+    - vendor/bitexpert/phpstan-magento/extension.neon
+
+parameters:
+    level: 8
+    paths:
+        - .
+    excludePaths:
+        - vendor
+        - node_modules (?)
+        - dev (?)
+        - Test (?)
+        - review (?)
+        - shops
+        - registration.php
+    bootstrapFiles:
+        - shops/2.4.9/vendor/autoload.php
+    magento:
+        magentoRoot: shops/2.4.9
+    phpVersion: 80400
+    treatPhpDocTypesAsCertain: false
+    reportUnmatchedIgnoredErrors: false

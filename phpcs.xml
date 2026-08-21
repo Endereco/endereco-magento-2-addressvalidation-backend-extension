@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<ruleset name="Parc_AddressValidation">
+    <description>PSR12 with relaxed line length for Magento config path strings</description>
+
+    <rule ref="PSR12"/>
+
+    <!-- Magento config paths are long by nature; 160 is a reasonable limit -->
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="lineLimit" value="160"/>
+            <property name="absoluteLineLimit" value="0"/>
+        </properties>
+    </rule>
+
+    <exclude-pattern>vendor/*</exclude-pattern>
+    <exclude-pattern>node_modules/*</exclude-pattern>
+    <exclude-pattern>shops/*</exclude-pattern>
+    <exclude-pattern>docker/*</exclude-pattern>
+    <exclude-pattern>dev/*</exclude-pattern>
+    <exclude-pattern>Test/*</exclude-pattern>
+    <exclude-pattern>review/*</exclude-pattern>
+</ruleset>

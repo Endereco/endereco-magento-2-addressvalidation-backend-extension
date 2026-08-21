@@ -1,0 +1,11 @@
+/vendor/
+/.phpunit.cache/
+/.phpstan/
+
+# Magento installs fetched by fetch_shops.sh — used as PHPStan bootstrap only
+/shops/
+
+# Lock files for the standalone QA-tool manifests — this is a library package,
+# lock files aren't committed for any composer manifest here
+composer.lock
+/composer-*.lock
