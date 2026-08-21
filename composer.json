@@ -51,6 +51,8 @@
         "cs": "vendor/bin/phpcs --standard=phpcs.xml --extensions=php .",
         "phpmd": "./check_phpmd.sh",
         "phpcompat": "bash test_php_versions.sh",
+        "serve": "./playground.sh",
+        "fetch-shops": "./fetch_shops.sh",
         "qa": [
             "rm -rf vendor",
             "COMPOSER=composer-phpcs.json composer install --prefer-dist --no-progress --no-interaction --quiet",
@@ -65,11 +67,15 @@
         ],
         "post-install-cmd": [
             "chmod +x test_php_versions.sh",
-            "chmod +x check_phpmd.sh"
+            "chmod +x check_phpmd.sh",
+            "chmod +x playground.sh",
+            "chmod +x fetch_shops.sh"
         ],
         "post-update-cmd": [
             "chmod +x test_php_versions.sh",
-            "chmod +x check_phpmd.sh"
+            "chmod +x check_phpmd.sh",
+            "chmod +x playground.sh",
+            "chmod +x fetch_shops.sh"
         ]
     },
     "autoload": {
