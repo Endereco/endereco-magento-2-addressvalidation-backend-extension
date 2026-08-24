@@ -104,8 +104,11 @@ class Save extends Action implements HttpPostActionInterface
             } else {
                 try {
                     // Persist manu_* on the validation record first so the
-                    // unhold plugin and CSV export see the same values.
-                    $this->addressValidationRepository->saveNewValues($params);
+                    // unhold plugin and CSV export see the same values. $applyToOrder=false
+                    // because updateShippingAddress() below applies it to the order itself -
+                    // letting saveNewValues() also do it (when auto-overwrite is on) would
+                    // save and comment on the order twice for this one click.
+                    $this->addressValidationRepository->saveNewValues($params, false);
                     $this->updateShippingAddress($params);
                     $this->messageManager
                         ->addSuccessMessage(__('The validated address was successfully saved as shipping address.'));
