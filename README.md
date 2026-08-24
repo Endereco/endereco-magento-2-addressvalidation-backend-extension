@@ -103,6 +103,7 @@ Go to **Stores → Configuration → endereco Backend Address Validation → Add
 | **Check additional info** | If enabled, orders where the address contains an addition (e.g. apartment number) are always put on hold. |
 | **Auto-Overwrite Address** | If enabled, unambiguous API corrections are automatically written back to Magento's native shipping address fields. **When to enable:** If your shipping or fulfillment extension reads Magento's native address fields directly (e.g. street, postcode, city), enable this so minor corrections from the API are applied there too. **When to leave disabled:** If you use a custom shipping connector that reads the validated address from the `parc_addressvalidation` table or the CSV export of this plugin independently, Magento's native fields are irrelevant and overwriting them is not necessary. |
 | **CSV Column Mapping** | Configure which fields appear in the CSV export and from which database tables they are pulled. See [CSV Column Mapping](#csv-column-mapping) below for a full explanation. |
+| **Log API Traffic** | If enabled, every request and response exchanged with the Endereco API is written to its own log file, `var/log/endereco_api.log`, including the customer's address data. Off by default — only enable temporarily while troubleshooting, then disable again. |
 
 ---
 
