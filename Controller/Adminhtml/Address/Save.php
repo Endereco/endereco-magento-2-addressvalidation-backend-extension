@@ -17,6 +17,7 @@ use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\Controller\Result\RedirectFactory;
 use Magento\Backend\Model\Auth\Session as BackendAuthSession;
 use Magento\Sales\Api\OrderRepositoryInterface;
+use Psr\Log\LoggerInterface;
 
 class Save extends Action implements HttpPostActionInterface
 {
@@ -41,6 +42,11 @@ class Save extends Action implements HttpPostActionInterface
     protected RegionResolver $regionResolver;
 
     /**
+     * @var LoggerInterface
+     */
+    protected LoggerInterface $logger;
+
+    /**
      * @param AddressValidationRepository $addressValidationRepository
      * @param ManagerInterface            $messageManager
      * @param RedirectFactory             $resultRedirectFactory
@@ -48,6 +54,7 @@ class Save extends Action implements HttpPostActionInterface
      * @param BackendAuthSession          $backendAuthSession
      * @param OrderRepositoryInterface    $orderRepository
      * @param RegionResolver              $regionResolver
+     * @param LoggerInterface             $logger
      */
     public function __construct(
         AddressValidationRepository $addressValidationRepository,
@@ -56,7 +63,8 @@ class Save extends Action implements HttpPostActionInterface
         Context                     $context,
         BackendAuthSession          $backendAuthSession,
         OrderRepositoryInterface    $orderRepository,
-        RegionResolver              $regionResolver
+        RegionResolver              $regionResolver,
+        LoggerInterface             $logger
     ) {
         $this->addressValidationRepository = $addressValidationRepository;
         $this->messageManager              = $messageManager;
@@ -64,6 +72,7 @@ class Save extends Action implements HttpPostActionInterface
         $this->backendAuthSession          = $backendAuthSession;
         $this->orderRepository             = $orderRepository;
         $this->regionResolver              = $regionResolver;
+        $this->logger                      = $logger;
         parent::__construct($context);
     }
 
@@ -158,6 +167,10 @@ class Save extends Action implements HttpPostActionInterface
         $shippingAddress = $order->getShippingAddress();
 
         if (!$shippingAddress) {
+            $this->logger->warning(sprintf(
+                'Address validation: order #%s has no shipping address, skipping shipping address update.',
+                $order->getIncrementId()
+            ));
             throw new LocalizedException(__('Shipping address not found.'));
         }
 
@@ -211,6 +224,14 @@ class Save extends Action implements HttpPostActionInterface
         $orderId         = $values['orderId'];
         $order           = $this->orderRepository->get($orderId);
         $shippingAddress = $order->getShippingAddress();
+
+        if (!$shippingAddress) {
+            $this->logger->warning(sprintf(
+                'Address validation: order #%s has no shipping address, skipping restore of original address.',
+                $order->getIncrementId()
+            ));
+            throw new LocalizedException(__('Shipping address not found.'));
+        }
 
         $shippingAddress
             ->setPostcode($addressValidation->getOrigZipCode())
