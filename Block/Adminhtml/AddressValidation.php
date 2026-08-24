@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Parc\AddressValidation\Block\Adminhtml;
 
+use Magento\Directory\Model\ResourceModel\Region\CollectionFactory as RegionCollectionFactory;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\View\Element\Template;
 use Magento\Sales\Block\Adminhtml\Order\View\Info;
@@ -27,21 +28,29 @@ class AddressValidation extends Template
     protected FormKey $formKey;
 
     /**
+     * @var RegionCollectionFactory
+     */
+    protected RegionCollectionFactory $regionCollectionFactory;
+
+    /**
      * Constructor
      *
      * @param AddressValidationRepository $addressValidationRepository
      * @param FormKey                     $formKey
+     * @param RegionCollectionFactory     $regionCollectionFactory
      * @param Template\Context            $context
      * @param array                       $data
      */
     public function __construct(
         AddressValidationRepository $addressValidationRepository,
         FormKey                     $formKey,
+        RegionCollectionFactory     $regionCollectionFactory,
         Context                     $context,
         array                       $data = []
     ) {
         $this->addressValidationRepository = $addressValidationRepository;
         $this->formKey                     = $formKey;
+        $this->regionCollectionFactory     = $regionCollectionFactory;
         parent::__construct($context, $data);
     }
 
@@ -92,5 +101,23 @@ class AddressValidation extends Template
     public function getFormKey(): string
     {
         return $this->formKey->getFormKey();
+    }
+
+    /**
+     * @param string $countryId
+     *
+     * @return array<int, string> region_id => name, sorted by name
+     */
+    public function getRegionOptions(string $countryId): array
+    {
+        $options = [];
+        $regions = $this->regionCollectionFactory->create()->addCountryFilter($countryId);
+        foreach ($regions as $region) {
+            /** @var \Magento\Directory\Model\Region $region */
+            $options[(int)$region->getRegionId()] = $region->getDefaultName();
+        }
+        asort($options);
+
+        return $options;
     }
 }

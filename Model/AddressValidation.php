@@ -135,6 +135,40 @@ class AddressValidation extends AbstractModel implements AddressValidationInterf
     /**
      * @inheritDoc
      */
+    public function getOrigRegionId(): ?int
+    {
+        $value = $this->getData(self::ORIG_REGION_ID);
+
+        return $value !== null ? (int)$value : null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setOrigRegionId(?int $origRegionId): AddressValidationInterface
+    {
+        return $this->setData(self::ORIG_REGION_ID, $origRegionId);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getOrigSubdivisionCode(): ?string
+    {
+        return $this->getData(self::ORIG_SUBDIVISION_CODE);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setOrigSubdivisionCode(?string $origSubdivisionCode): AddressValidationInterface
+    {
+        return $this->setData(self::ORIG_SUBDIVISION_CODE, $origSubdivisionCode);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getApiZipCode(): ?string
     {
         return $this->getData(self::API_ZIP_CODE);
@@ -210,6 +244,40 @@ class AddressValidation extends AbstractModel implements AddressValidationInterf
     public function setApiAdditionalInformation(?string $apiAdditionalInformation): AddressValidationInterface
     {
         return $this->setData(self::API_ADDITIONAL_INFORMATION, $apiAdditionalInformation);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getApiRegionId(): ?int
+    {
+        $value = $this->getData(self::API_REGION_ID);
+
+        return $value !== null ? (int)$value : null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setApiRegionId(?int $apiRegionId): AddressValidationInterface
+    {
+        return $this->setData(self::API_REGION_ID, $apiRegionId);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getApiSubdivisionCode(): ?string
+    {
+        return $this->getData(self::API_SUBDIVISION_CODE);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setApiSubdivisionCode(?string $apiSubdivisionCode): AddressValidationInterface
+    {
+        return $this->setData(self::API_SUBDIVISION_CODE, $apiSubdivisionCode);
     }
 
     /**
@@ -311,6 +379,40 @@ class AddressValidation extends AbstractModel implements AddressValidationInterf
     /**
      * @inheritDoc
      */
+    public function getManuRegionId(): ?int
+    {
+        $value = $this->getData(self::MANU_REGION_ID);
+
+        return $value !== null ? (int)$value : null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setManuRegionId(?int $manuRegionId): AddressValidationInterface
+    {
+        return $this->setData(self::MANU_REGION_ID, $manuRegionId);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getManuSubdivisionCode(): ?string
+    {
+        return $this->getData(self::MANU_SUBDIVISION_CODE);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setManuSubdivisionCode(?string $manuSubdivisionCode): AddressValidationInterface
+    {
+        return $this->setData(self::MANU_SUBDIVISION_CODE, $manuSubdivisionCode);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getEditedBy(): ?string
     {
         return $this->getData(self::EDITED_BY);
@@ -378,5 +480,21 @@ class AddressValidation extends AbstractModel implements AddressValidationInterf
     public function getResolvedAdditionalInformation(): ?string
     {
         return $this->getManuAdditionalInformation() ?? $this->getApiAdditionalInformation();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getResolvedRegionId(): ?int
+    {
+        return $this->getManuRegionId() ?? $this->getApiRegionId();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getResolvedSubdivisionCode(): ?string
+    {
+        return $this->getManuSubdivisionCode() ?? $this->getApiSubdivisionCode();
     }
 }

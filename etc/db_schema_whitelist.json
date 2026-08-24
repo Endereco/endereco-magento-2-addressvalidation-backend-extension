@@ -10,17 +10,23 @@
             "api_street": true,
             "api_house_number": true,
             "api_additional_information": true,
+            "api_region_id": true,
+            "api_subdivision_code": true,
             "status_codes": true,
             "manu_zip_code": true,
             "manu_city": true,
             "manu_street": true,
             "manu_house_number": true,
             "manu_additional_information": true,
+            "manu_region_id": true,
+            "manu_subdivision_code": true,
             "edited_by": true,
             "edited_at": true,
             "orig_zip_code": true,
             "orig_city": true,
-            "orig_street_full": true
+            "orig_street_full": true,
+            "orig_region_id": true,
+            "orig_subdivision_code": true
         },
         "constraint": {
             "PRIMARY": true
