@@ -234,9 +234,15 @@ class AddressValidationRepository implements AddressValidationRepositoryInterfac
     }
 
     /**
+     * @param array $values
+     * @param bool  $applyToOrder Whether to also write the resolved address onto the order's
+     *                            shipping address when auto-overwrite is enabled. Callers that
+     *                            immediately apply the address themselves afterwards (e.g. the
+     *                            "save_as_shipping" controller action) should pass false, or the
+     *                            order gets saved and commented on twice for a single admin click.
      * @throws LocalizedException
      */
-    public function saveNewValues($values): void
+    public function saveNewValues($values, bool $applyToOrder = true): void
     {
         $addressValidation = $this->get((int)$values['addressValidationId']);
 
@@ -292,7 +298,7 @@ class AddressValidationRepository implements AddressValidationRepositoryInterfac
         $this->save($addressValidation);
 
         // if config is set to overwrite orig. shipping address this needs to be done here
-        if ($this->overwriteOriginal) {
+        if ($this->overwriteOriginal && $applyToOrder) {
             $order           = $this->orderRepository->get($addressValidation->getOrderId());
             $shippingAddress = $order->getShippingAddress();
 
