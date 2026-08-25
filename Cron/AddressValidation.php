@@ -158,6 +158,19 @@ class AddressValidation
         foreach ($relevantOrders as $relevantOrder) {
             $order           = $this->orderRepository->get($relevantOrder['entity_id']);
             $shippingAddress = $order->getShippingAddress();
+
+            if ($shippingAddress === null) {
+                // Should be excluded by getRelevantOrders()'s is_virtual filter already;
+                // this is a safety net for any other reason an order might lack a shipping
+                // address. Skipping without recording anything means it would be picked up
+                // again next tick and log again - acceptable, since this is expected to be rare.
+                $this->logger->warning(sprintf(
+                    'Address validation cron: order #%s has no shipping address, skipping.',
+                    $order->getIncrementId()
+                ));
+                continue;
+            }
+
             $zipCode         = (string)$shippingAddress['postcode'];
             $city            = (string)$shippingAddress['city'];
             $countryCode     = (string)$shippingAddress['country_id'];
@@ -275,7 +288,8 @@ class AddressValidation
                 WHERE entity_id NOT IN (
                     SELECT order_id FROM parc_addressvalidation
                 )
-                AND status IN ($formattedOrderStatus)";
+                AND status IN ($formattedOrderStatus)
+                AND is_virtual = 0";
 
         // phpcs:enable
         return $this->resourceConnection->getConnection()->fetchAll($sql);

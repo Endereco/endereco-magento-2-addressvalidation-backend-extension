@@ -25,6 +25,7 @@ use Parc\AddressValidation\Model\ResourceModel\AddressValidation\CollectionFacto
 use Magento\Directory\Model\CountryFactory;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
+use Psr\Log\LoggerInterface;
 
 class AddressValidationRepository implements AddressValidationRepositoryInterface
 {
@@ -76,6 +77,11 @@ class AddressValidationRepository implements AddressValidationRepositoryInterfac
     protected RegionResolver $regionResolver;
 
     /**
+     * @var LoggerInterface
+     */
+    protected LoggerInterface $logger;
+
+    /**
      * @param ResourceAddressValidation                      $resource
      * @param AddressValidationInterfaceFactory              $addressValidationFactory
      * @param AddressValidationCollectionFactory             $addressValidationCollectionFactory
@@ -85,6 +91,7 @@ class AddressValidationRepository implements AddressValidationRepositoryInterfac
      * @param ScopeConfigInterface                           $scopeConfig
      * @param OrderRepositoryInterface                       $orderRepository
      * @param RegionResolver                                 $regionResolver
+     * @param LoggerInterface                                $logger
      */
     public function __construct(
         ResourceAddressValidation                      $resource,
@@ -95,7 +102,8 @@ class AddressValidationRepository implements AddressValidationRepositoryInterfac
         CountryFactory                                 $countryFactory,
         ScopeConfigInterface                           $scopeConfig,
         OrderRepositoryInterface                       $orderRepository,
-        RegionResolver                                 $regionResolver
+        RegionResolver                                 $regionResolver,
+        LoggerInterface                                $logger
     ) {
         $this->resource                           = $resource;
         $this->addressValidationFactory           = $addressValidationFactory;
@@ -106,6 +114,7 @@ class AddressValidationRepository implements AddressValidationRepositoryInterfac
         $this->scopeConfig                        = $scopeConfig;
         $this->orderRepository                    = $orderRepository;
         $this->regionResolver                     = $regionResolver;
+        $this->logger                             = $logger;
 
         $this->overwriteOriginal = (string)$this->scopeConfig->getValue('parc_addressvalidation/general/overwriteoriginal');
     }
@@ -286,6 +295,15 @@ class AddressValidationRepository implements AddressValidationRepositoryInterfac
         if ($this->overwriteOriginal) {
             $order           = $this->orderRepository->get($addressValidation->getOrderId());
             $shippingAddress = $order->getShippingAddress();
+
+            if (!$shippingAddress) {
+                $this->logger->warning(sprintf(
+                    'Address validation: order #%s has no shipping address, skipping overwrite of original address.',
+                    $order->getIncrementId()
+                ));
+                throw new LocalizedException(__('Shipping address not found.'));
+            }
+
             // set validated address as orig. shipping address if configuration is enabled
             $shippingAddress
                 ->setPostcode($addressValidation->getResolvedZipCode())

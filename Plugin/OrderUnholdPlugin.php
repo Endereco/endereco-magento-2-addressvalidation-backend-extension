@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Parc\AddressValidation\Plugin;
 
-use Exception;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Api\OrderManagementInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
@@ -12,6 +11,7 @@ use Magento\Backend\Model\Auth\Session as BackendAuthSession;
 use Parc\AddressValidation\Model\AddressValidationRepository;
 use Parc\AddressValidation\Model\RegionResolver;
 use Magento\Framework\Message\ManagerInterface;
+use Throwable;
 
 class OrderUnholdPlugin
 {
@@ -120,7 +120,7 @@ class OrderUnholdPlugin
             ));
 
             $this->orderRepository->save($order);
-        } catch (Exception) {
+        } catch (Throwable) {
             $this->messageManager
                 ->addErrorMessage(__('An error occurred while saving the validated address as shipping address.'));
         }
