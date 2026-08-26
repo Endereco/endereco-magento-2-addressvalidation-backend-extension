@@ -233,7 +233,7 @@ class AddressValidation
                         count($foundAddresses) > 1) {
                         // needs to be manually checked
                         $this->setAddressValidationStatus($order);
-                    } elseif ($this->overwriteOriginal) {
+                    } elseif ($this->overwriteOriginal && count($foundAddresses) === 1) {
                         // set validated address as orig. shipping address if configuration is enabled
                         $streetLines = array_filter([
                             ($foundAddresses[0]['street'] ?? '') . ' ' . ($foundAddresses[0]['houseNumber'] ?? ''),
@@ -250,6 +250,13 @@ class AddressValidation
                         ));
 
                         $this->orderRepository->save($order);
+                    } elseif ($this->overwriteOriginal && count($foundAddresses) === 0) {
+                        // Auto-overwrite is on, but the API returned no candidate at all - there is
+                        // nothing to write back (unlike the count()>1 case above, none of the
+                        // returned status codes need to be "critical" for this to happen; sharpness
+                        // config alone can't be relied on to catch it). Hold for manual review
+                        // instead of leaving the order to proceed with a wiped shipping address.
+                        $this->setAddressValidationStatus($order);
                     }
                     // save address as verified shipping address
                     $verifiedAddress = $this->addressValidationFactory->create();
