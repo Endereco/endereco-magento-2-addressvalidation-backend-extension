@@ -82,6 +82,11 @@ class AddressValidationRepository implements AddressValidationRepositoryInterfac
     protected LoggerInterface $logger;
 
     /**
+     * @var StreetLineBuilder
+     */
+    protected StreetLineBuilder $streetLineBuilder;
+
+    /**
      * @param ResourceAddressValidation                      $resource
      * @param AddressValidationInterfaceFactory              $addressValidationFactory
      * @param AddressValidationCollectionFactory             $addressValidationCollectionFactory
@@ -92,6 +97,7 @@ class AddressValidationRepository implements AddressValidationRepositoryInterfac
      * @param OrderRepositoryInterface                       $orderRepository
      * @param RegionResolver                                 $regionResolver
      * @param LoggerInterface                                $logger
+     * @param StreetLineBuilder                              $streetLineBuilder
      */
     public function __construct(
         ResourceAddressValidation                      $resource,
@@ -103,7 +109,8 @@ class AddressValidationRepository implements AddressValidationRepositoryInterfac
         ScopeConfigInterface                           $scopeConfig,
         OrderRepositoryInterface                       $orderRepository,
         RegionResolver                                 $regionResolver,
-        LoggerInterface                                $logger
+        LoggerInterface                                $logger,
+        StreetLineBuilder                              $streetLineBuilder
     ) {
         $this->resource                           = $resource;
         $this->addressValidationFactory           = $addressValidationFactory;
@@ -115,6 +122,7 @@ class AddressValidationRepository implements AddressValidationRepositoryInterfac
         $this->orderRepository                    = $orderRepository;
         $this->regionResolver                     = $regionResolver;
         $this->logger                             = $logger;
+        $this->streetLineBuilder                  = $streetLineBuilder;
 
         $this->overwriteOriginal = (string)$this->scopeConfig->getValue('parc_addressvalidation/general/overwriteoriginal');
     }
@@ -314,11 +322,11 @@ class AddressValidationRepository implements AddressValidationRepositoryInterfac
             $shippingAddress
                 ->setPostcode($addressValidation->getResolvedZipCode())
                 ->setCity($addressValidation->getResolvedCity())
-                ->setStreet(
-                    $addressValidation->getResolvedStreet()
-                    . ' '
-                    . $addressValidation->getResolvedHouseNumber()
-                );
+                ->setStreet($this->streetLineBuilder->build(
+                    $addressValidation->getResolvedStreet(),
+                    $addressValidation->getResolvedHouseNumber(),
+                    $addressValidation->getResolvedAdditionalInformation()
+                ));
             $this->regionResolver->applyRegion($shippingAddress, $addressValidation->getResolvedRegionId());
 
             $order->addCommentToStatusHistory(__(

@@ -13,6 +13,7 @@ use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Parc\AddressValidation\Model\AddressValidationRepository;
 use Parc\AddressValidation\Model\RegionResolver;
+use Parc\AddressValidation\Model\StreetLineBuilder;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\Controller\Result\RedirectFactory;
 use Magento\Backend\Model\Auth\Session as BackendAuthSession;
@@ -47,6 +48,11 @@ class Save extends Action implements HttpPostActionInterface
     protected LoggerInterface $logger;
 
     /**
+     * @var StreetLineBuilder
+     */
+    protected StreetLineBuilder $streetLineBuilder;
+
+    /**
      * @param AddressValidationRepository $addressValidationRepository
      * @param ManagerInterface            $messageManager
      * @param RedirectFactory             $resultRedirectFactory
@@ -55,6 +61,7 @@ class Save extends Action implements HttpPostActionInterface
      * @param OrderRepositoryInterface    $orderRepository
      * @param RegionResolver              $regionResolver
      * @param LoggerInterface             $logger
+     * @param StreetLineBuilder           $streetLineBuilder
      */
     public function __construct(
         AddressValidationRepository $addressValidationRepository,
@@ -64,7 +71,8 @@ class Save extends Action implements HttpPostActionInterface
         BackendAuthSession          $backendAuthSession,
         OrderRepositoryInterface    $orderRepository,
         RegionResolver              $regionResolver,
-        LoggerInterface             $logger
+        LoggerInterface             $logger,
+        StreetLineBuilder           $streetLineBuilder
     ) {
         $this->addressValidationRepository = $addressValidationRepository;
         $this->messageManager              = $messageManager;
@@ -73,6 +81,7 @@ class Save extends Action implements HttpPostActionInterface
         $this->orderRepository             = $orderRepository;
         $this->regionResolver              = $regionResolver;
         $this->logger                      = $logger;
+        $this->streetLineBuilder           = $streetLineBuilder;
         parent::__construct($context);
     }
 
@@ -177,14 +186,14 @@ class Save extends Action implements HttpPostActionInterface
             throw new LocalizedException(__('Shipping address not found.'));
         }
 
-        $streetLines = array_filter([
-            $values['street'] . ' ' . $values['houseNumber'],
-            $values['additionalInfo'] ?? '',
-        ]);
         $shippingAddress
             ->setPostcode($values['zipCode'])
             ->setCity($values['city'])
-            ->setStreet(array_values($streetLines));
+            ->setStreet($this->streetLineBuilder->build(
+                $values['street'],
+                $values['houseNumber'],
+                $values['additionalInfo'] ?? null
+            ));
         $this->regionResolver->applyRegion(
             $shippingAddress,
             ($values['regionId'] ?? '') !== '' ? (int)$values['regionId'] : null
