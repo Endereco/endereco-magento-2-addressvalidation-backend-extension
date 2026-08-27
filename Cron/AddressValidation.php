@@ -14,6 +14,7 @@ use Magento\Framework\Lock\LockManagerInterface;
 use Magento\Sales\Model\OrderRepository;
 use Parc\AddressValidation\Model\AddressValidationFactory;
 use Parc\AddressValidation\Model\RegionResolver;
+use Parc\AddressValidation\Model\StreetLineBuilder;
 use Parc\AddressValidation\Service\EnderecoApi;
 use Parc\AddressValidation\Model\AddressValidationRepository;
 use Psr\Log\LoggerInterface;
@@ -83,6 +84,11 @@ class AddressValidation
     protected RegionResolver $regionResolver;
 
     /**
+     * @var StreetLineBuilder
+     */
+    protected StreetLineBuilder $streetLineBuilder;
+
+    /**
      * @param ResourceConnection          $resourceConnection
      * @param OrderRepository             $orderRepository
      * @param EnderecoApi                 $enderecoApi
@@ -93,6 +99,7 @@ class AddressValidation
      * @param LockManagerInterface        $lockManager
      * @param LoggerInterface             $logger
      * @param RegionResolver              $regionResolver
+     * @param StreetLineBuilder           $streetLineBuilder
      */
     public function __construct(
         ResourceConnection          $resourceConnection,
@@ -104,7 +111,8 @@ class AddressValidation
         ScopeConfigInterface        $scopeConfig,
         LockManagerInterface        $lockManager,
         LoggerInterface             $logger,
-        RegionResolver              $regionResolver
+        RegionResolver              $regionResolver,
+        StreetLineBuilder           $streetLineBuilder
     ) {
         $this->resourceConnection          = $resourceConnection;
         $this->orderRepository             = $orderRepository;
@@ -116,6 +124,7 @@ class AddressValidation
         $this->lockManager                 = $lockManager;
         $this->logger                      = $logger;
         $this->regionResolver              = $regionResolver;
+        $this->streetLineBuilder           = $streetLineBuilder;
 
         $this->overwriteOriginal   = (string)$this->scopeConfig->getValue('parc_addressvalidation/general/overwriteoriginal');
         $this->orderStatus         = (string)$this->scopeConfig->getValue('parc_addressvalidation/general/orderstatus');
@@ -235,14 +244,14 @@ class AddressValidation
                         $this->setAddressValidationStatus($order);
                     } elseif ($this->overwriteOriginal) {
                         // set validated address as orig. shipping address if configuration is enabled
-                        $streetLines = array_filter([
-                            ($foundAddresses[0]['street'] ?? '') . ' ' . ($foundAddresses[0]['houseNumber'] ?? ''),
-                            $additionalInfo ?? '',
-                        ]);
                         $shippingAddress
                             ->setPostcode($foundAddresses[0]['postCode'])
                             ->setCity($foundAddresses[0]['cityName'])
-                            ->setStreet(array_values($streetLines));
+                            ->setStreet($this->streetLineBuilder->build(
+                                $foundAddresses[0]['street'] ?? '',
+                                $foundAddresses[0]['houseNumber'] ?? '',
+                                $additionalInfo
+                            ));
                         $this->regionResolver->applyRegion($shippingAddress, $apiRegionId);
 
                         $order->addCommentToStatusHistory(__(
