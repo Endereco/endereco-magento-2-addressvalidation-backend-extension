@@ -224,9 +224,12 @@ $allowedAddressHtmlTags = ['b', 'br', 'em', 'i', 'li', 'ol', 'p', 'strong', 'sub
                             <td><?= $block->escapeHtml(__('Company')) ?></td>
                             <td><?= $block->escapeHtml($order->getShippingAddress()->getCompany()) ?></td>
                         </tr>
-                        <tr><?php $street = $order->getShippingAddress()->getStreet() ?>
+                        <tr>
                             <td><?= $block->escapeHtml(__('Street')) ?></td>
-                            <td><?= /* @noEscape */ implode("<br>", $order->getShippingAddress()->getStreet()) ?></td>
+                            <td><?= implode(
+                                '<br>',
+                                array_map([$block, 'escapeHtml'], $order->getShippingAddress()->getStreet())
+                            ) ?></td>
                         </tr>
                         <tr>
                             <td style="padding-right: 20px">
