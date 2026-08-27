@@ -318,15 +318,28 @@ class AddressValidationRepository implements AddressValidationRepositoryInterfac
                 throw new LocalizedException(__('Shipping address not found.'));
             }
 
+            $resolvedZipCode = $addressValidation->getResolvedZipCode();
+            $resolvedCity    = $addressValidation->getResolvedCity();
+            $streetLines     = $this->streetLineBuilder->buildFromResolved($addressValidation);
+
+            // Guard: getResolved*() falls back through manual correction -> API
+            // suggestion -> original address, so this is only empty when even the
+            // original checkout input is missing. Applying an empty result would
+            // clear the shipping address to null/whitespace - skip silently instead.
+            if ($resolvedZipCode === null && $resolvedCity === null && empty($streetLines)) {
+                $this->logger->warning(sprintf(
+                    'Address validation: order #%s has no resolvable address (manual, API, or '
+                    . 'original), skipping overwrite of original address.',
+                    $order->getIncrementId()
+                ));
+                return;
+            }
+
             // set validated address as orig. shipping address if configuration is enabled
             $shippingAddress
-                ->setPostcode($addressValidation->getResolvedZipCode())
-                ->setCity($addressValidation->getResolvedCity())
-                ->setStreet($this->streetLineBuilder->build(
-                    $addressValidation->getResolvedStreet(),
-                    $addressValidation->getResolvedHouseNumber(),
-                    $addressValidation->getResolvedAdditionalInformation()
-                ));
+                ->setPostcode($resolvedZipCode)
+                ->setCity($resolvedCity)
+                ->setStreet($streetLines);
             $this->regionResolver->applyRegion($shippingAddress, $addressValidation->getResolvedRegionId());
 
             $order->addCommentToStatusHistory(__(

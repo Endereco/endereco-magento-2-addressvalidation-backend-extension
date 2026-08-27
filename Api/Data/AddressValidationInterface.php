@@ -427,18 +427,24 @@ interface AddressValidationInterface
     public function setEditedAt(?string $editedAt): AddressValidationInterface;
 
     /**
-     * Resolve the manual override if set, else the API value.
+     * Resolve address priority: manual correction -> API suggestion -> original.
      *
      * @return string|null
      */
     public function getResolvedZipCode(): ?string;
 
     /**
+     * Resolve address priority: manual correction -> API suggestion -> original.
+     *
      * @return string|null
      */
     public function getResolvedCity(): ?string;
 
     /**
+     * Resolve address priority: manual correction -> API suggestion. No
+     * original fallback here - see StreetLineBuilder::buildFromResolved()
+     * for why orig_street_full needs different handling.
+     *
      * @return string|null
      */
     public function getResolvedStreet(): ?string;
@@ -454,11 +460,15 @@ interface AddressValidationInterface
     public function getResolvedAdditionalInformation(): ?string;
 
     /**
+     * Resolve address priority: manual correction -> API suggestion -> original.
+     *
      * @return int|null
      */
     public function getResolvedRegionId(): ?int;
 
     /**
+     * Resolve address priority: manual correction -> API suggestion -> original.
+     *
      * @return string|null
      */
     public function getResolvedSubdivisionCode(): ?string;
