@@ -505,4 +505,17 @@ class AddressValidation extends AbstractModel implements AddressValidationInterf
     {
         return $this->getManuSubdivisionCode() ?? $this->getApiSubdivisionCode() ?? $this->getOrigSubdivisionCode();
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function hasZipCityOrStreetCorrection(): bool
+    {
+        return $this->getManuZipCode() !== null
+            || $this->getApiZipCode() !== null
+            || $this->getManuCity() !== null
+            || $this->getApiCity() !== null
+            || $this->getManuStreet() !== null
+            || $this->getApiStreet() !== null;
+    }
 }

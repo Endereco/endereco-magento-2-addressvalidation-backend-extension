@@ -472,4 +472,27 @@ interface AddressValidationInterface
      * @return string|null
      */
     public function getResolvedSubdivisionCode(): ?string;
+
+    /**
+     * Whether a manual correction or API suggestion exists for zip code, city,
+     * or street - i.e. whether there is anything to write back to the order's
+     * shipping address beyond its own original values. Used as the single
+     * source of truth by both OrderUnholdPlugin and
+     * AddressValidationRepository::saveNewValues() to decide whether to write
+     * and comment at all; getResolved*() itself can't be used for this since
+     * it now always resolves to something once orig_* is populated.
+     *
+     * Deliberately narrower than "any manu_ or api_ field is set at all":
+     * region is applied separately via RegionResolver::applyRegion(), which is
+     * already a no-op when unresolved, and additionalInfo only ever appears as
+     * part of the composed street line. That street line has its own, separate
+     * fallback decision in StreetLineBuilder::buildFromResolved() - whether to
+     * use the split street/house-number pair or fall back to the single
+     * combined orig_street_full line - which intentionally checks only
+     * manu_street/api_street, not this broader "is there anything to write at
+     * all" question.
+     *
+     * @return bool
+     */
+    public function hasZipCityOrStreetCorrection(): bool;
 }

@@ -56,6 +56,11 @@ class StreetLineBuilder
             );
         }
 
-        return array_values(array_filter([$addressValidation->getOrigStreetFull() ?? '']));
+        // Not array_filter(): its default callback treats the string "0" as
+        // falsy and would silently drop a street value that happens to be
+        // exactly "0" - an explicit null/empty check doesn't have that trap.
+        $origStreetFull = $addressValidation->getOrigStreetFull();
+
+        return $origStreetFull !== null && $origStreetFull !== '' ? [$origStreetFull] : [];
     }
 }

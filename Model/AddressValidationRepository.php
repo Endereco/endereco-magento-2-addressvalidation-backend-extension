@@ -318,18 +318,19 @@ class AddressValidationRepository implements AddressValidationRepositoryInterfac
                 throw new LocalizedException(__('Shipping address not found.'));
             }
 
-            $resolvedZipCode = $addressValidation->getResolvedZipCode();
-            $resolvedCity    = $addressValidation->getResolvedCity();
-            $streetLines     = $this->streetLineBuilder->buildFromResolved($addressValidation);
-
-            // Guard: getResolved*() falls back through manual correction -> API
-            // suggestion -> original address, so this is only empty when even the
-            // original checkout input is missing. Applying an empty result would
-            // clear the shipping address to null/whitespace - skip silently instead.
-            if ($resolvedZipCode === null && $resolvedCity === null && empty($streetLines)) {
+            // Guard: skip when there is no manual correction or API suggestion at
+            // all - nothing to apply beyond what the order already has. Checked via
+            // hasZipCityOrStreetCorrection(), not getResolved*(): since getResolved*()
+            // now falls back to orig_* (the documented third priority tier), it is
+            // never null once an order has an original address at all, so a null
+            // check on it can no longer detect "there is nothing new to write back"
+            // and would instead re-apply the order's own original address back onto
+            // itself with a misleading "overwritten by the system" comment and a
+            // redundant save.
+            if (!$addressValidation->hasZipCityOrStreetCorrection()) {
                 $this->logger->warning(sprintf(
-                    'Address validation: order #%s has no resolvable address (manual, API, or '
-                    . 'original), skipping overwrite of original address.',
+                    'Address validation: order #%s has no manual correction or API '
+                    . 'suggestion, skipping overwrite of original address.',
                     $order->getIncrementId()
                 ));
                 return;
@@ -337,9 +338,9 @@ class AddressValidationRepository implements AddressValidationRepositoryInterfac
 
             // set validated address as orig. shipping address if configuration is enabled
             $shippingAddress
-                ->setPostcode($resolvedZipCode)
-                ->setCity($resolvedCity)
-                ->setStreet($streetLines);
+                ->setPostcode($addressValidation->getResolvedZipCode())
+                ->setCity($addressValidation->getResolvedCity())
+                ->setStreet($this->streetLineBuilder->buildFromResolved($addressValidation));
             $this->regionResolver->applyRegion($shippingAddress, $addressValidation->getResolvedRegionId());
 
             $order->addCommentToStatusHistory(__(
