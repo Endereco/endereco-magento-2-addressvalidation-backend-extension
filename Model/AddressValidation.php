@@ -447,7 +447,7 @@ class AddressValidation extends AbstractModel implements AddressValidationInterf
      */
     public function getResolvedZipCode(): ?string
     {
-        return $this->getManuZipCode() ?? $this->getApiZipCode();
+        return $this->getManuZipCode() ?? $this->getApiZipCode() ?? $this->getOrigZipCode();
     }
 
     /**
@@ -455,11 +455,19 @@ class AddressValidation extends AbstractModel implements AddressValidationInterf
      */
     public function getResolvedCity(): ?string
     {
-        return $this->getManuCity() ?? $this->getApiCity();
+        return $this->getManuCity() ?? $this->getApiCity() ?? $this->getOrigCity();
     }
 
     /**
      * @inheritDoc
+     *
+     * Deliberately has no orig_street_full fallback, unlike the other
+     * getResolved*() methods: orig_street_full is one combined string, not a
+     * street/house-number pair, so a caller doing
+     * getResolvedStreet() . ' ' . getResolvedHouseNumber() would corrupt it
+     * by appending the house number a second time. See
+     * StreetLineBuilder::buildFromResolved() for the fallback that handles
+     * this correctly.
      */
     public function getResolvedStreet(): ?string
     {
@@ -487,7 +495,7 @@ class AddressValidation extends AbstractModel implements AddressValidationInterf
      */
     public function getResolvedRegionId(): ?int
     {
-        return $this->getManuRegionId() ?? $this->getApiRegionId();
+        return $this->getManuRegionId() ?? $this->getApiRegionId() ?? $this->getOrigRegionId();
     }
 
     /**
@@ -495,6 +503,19 @@ class AddressValidation extends AbstractModel implements AddressValidationInterf
      */
     public function getResolvedSubdivisionCode(): ?string
     {
-        return $this->getManuSubdivisionCode() ?? $this->getApiSubdivisionCode();
+        return $this->getManuSubdivisionCode() ?? $this->getApiSubdivisionCode() ?? $this->getOrigSubdivisionCode();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function hasZipCityOrStreetCorrection(): bool
+    {
+        return $this->getManuZipCode() !== null
+            || $this->getApiZipCode() !== null
+            || $this->getManuCity() !== null
+            || $this->getApiCity() !== null
+            || $this->getManuStreet() !== null
+            || $this->getApiStreet() !== null;
     }
 }

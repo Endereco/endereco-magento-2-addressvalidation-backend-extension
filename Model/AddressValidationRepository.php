@@ -318,15 +318,29 @@ class AddressValidationRepository implements AddressValidationRepositoryInterfac
                 throw new LocalizedException(__('Shipping address not found.'));
             }
 
+            // Guard: skip when there is no manual correction or API suggestion at
+            // all - nothing to apply beyond what the order already has. Checked via
+            // hasZipCityOrStreetCorrection(), not getResolved*(): since getResolved*()
+            // now falls back to orig_* (the documented third priority tier), it is
+            // never null once an order has an original address at all, so a null
+            // check on it can no longer detect "there is nothing new to write back"
+            // and would instead re-apply the order's own original address back onto
+            // itself with a misleading "overwritten by the system" comment and a
+            // redundant save.
+            if (!$addressValidation->hasZipCityOrStreetCorrection()) {
+                $this->logger->warning(sprintf(
+                    'Address validation: order #%s has no manual correction or API '
+                    . 'suggestion, skipping overwrite of original address.',
+                    $order->getIncrementId()
+                ));
+                return;
+            }
+
             // set validated address as orig. shipping address if configuration is enabled
             $shippingAddress
                 ->setPostcode($addressValidation->getResolvedZipCode())
                 ->setCity($addressValidation->getResolvedCity())
-                ->setStreet($this->streetLineBuilder->build(
-                    $addressValidation->getResolvedStreet(),
-                    $addressValidation->getResolvedHouseNumber(),
-                    $addressValidation->getResolvedAdditionalInformation()
-                ));
+                ->setStreet($this->streetLineBuilder->buildFromResolved($addressValidation));
             $this->regionResolver->applyRegion($shippingAddress, $addressValidation->getResolvedRegionId());
 
             $order->addCommentToStatusHistory(__(

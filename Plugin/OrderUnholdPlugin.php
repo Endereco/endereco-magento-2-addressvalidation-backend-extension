@@ -98,13 +98,17 @@ class OrderUnholdPlugin
                 return $result;
             }
 
-            // Guard: resolved values are null when "Restore orig. shipping address"
-            // was called before unhold (it nulls all api_* and manu_* fields).
-            // Applying them would clear the shipping address to null/whitespace -
-            // skip silently instead, leaving the already-restored original in place.
-            if ($validatedAddress->getResolvedZipCode() === null
-                && $validatedAddress->getResolvedStreet() === null
-                && $validatedAddress->getResolvedCity() === null) {
+            // Guard: skip when there is no manual correction or API suggestion at
+            // all - nothing to apply beyond what the order already has. Checked via
+            // hasZipCityOrStreetCorrection(), not getResolved*(): since getResolved*()
+            // now falls back to orig_* (the documented third priority tier), it is
+            // never null once an order has an original address at all, so a null
+            // check on it can no longer detect "restore orig. shipping address was
+            // called right before this unhold" - the exact case this guard exists
+            // for (Issue #28) - and would otherwise re-apply the order's own
+            // original address back onto itself with a misleading "validated
+            // address was set" comment and a redundant save.
+            if (!$validatedAddress->hasZipCityOrStreetCorrection()) {
                 return $result;
             }
 
@@ -116,11 +120,7 @@ class OrderUnholdPlugin
             $shippingAddress
                 ->setPostcode($validatedAddress->getResolvedZipCode())
                 ->setCity($validatedAddress->getResolvedCity())
-                ->setStreet($this->streetLineBuilder->build(
-                    $validatedAddress->getResolvedStreet(),
-                    $validatedAddress->getResolvedHouseNumber(),
-                    $validatedAddress->getResolvedAdditionalInformation()
-                ));
+                ->setStreet($this->streetLineBuilder->buildFromResolved($validatedAddress));
             $this->regionResolver->applyRegion($shippingAddress, $validatedAddress->getResolvedRegionId());
 
             $order->addCommentToStatusHistory(__(

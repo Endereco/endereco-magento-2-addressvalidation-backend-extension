@@ -11,7 +11,13 @@ if ($addressValidation !== null) {
     $addressValidationId = $addressValidation->getAddressValidationId();
     $orderId = $addressValidation->getOrderId();
     $houseNumber = $addressValidation->getResolvedHouseNumber();
-    $street = $addressValidation->getResolvedStreet();
+    // getResolvedStreet() has no orig_* fallback of its own (orig_street_full is
+    // one already-combined string, not a separate street/house-number pair - see
+    // StreetLineBuilder::buildFromResolved()). Falling back to it here directly,
+    // for display only, avoids a blank Street field when Zip/City/Region are
+    // already prefilled from orig_*; house number is left blank rather than
+    // guessed out of the combined string.
+    $street = $addressValidation->getResolvedStreet() ?? $addressValidation->getOrigStreetFull();
     $zipCode = $addressValidation->getResolvedZipCode();
     $city = $addressValidation->getResolvedCity();
     $additionalInfo = $addressValidation->getResolvedAdditionalInformation();
