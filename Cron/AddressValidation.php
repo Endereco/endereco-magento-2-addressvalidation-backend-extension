@@ -16,6 +16,7 @@ use Parc\AddressValidation\Model\AddressValidationFactory;
 use Parc\AddressValidation\Model\RegionResolver;
 use Parc\AddressValidation\Model\StreetLineBuilder;
 use Parc\AddressValidation\Service\EnderecoApi;
+use Parc\AddressValidation\Service\EnderecoApiUnavailableException;
 use Parc\AddressValidation\Model\AddressValidationRepository;
 use Psr\Log\LoggerInterface;
 
@@ -150,12 +151,6 @@ class AddressValidation
         }
     }
 
-    /**
-     * @throws AlreadyExistsException
-     * @throws LocalizedException
-     * @throws NoSuchEntityException
-     * @throws InputException
-     */
     private function doExecute(): void
     {
         if (!$this->orderStatus || !$this->statusCodes) {
@@ -164,135 +159,173 @@ class AddressValidation
 
         $relevantOrders = $this->getRelevantOrders();
 
-        foreach ($relevantOrders as $relevantOrder) {
-            $order           = $this->orderRepository->get($relevantOrder['entity_id']);
-            $shippingAddress = $order->getShippingAddress();
-
-            if ($shippingAddress === null) {
-                // Should be excluded by getRelevantOrders()'s is_virtual filter already;
-                // this is a safety net for any other reason an order might lack a shipping
-                // address. Skipping without recording anything means it would be picked up
-                // again next tick and log again - acceptable, since this is expected to be rare.
-                $this->logger->warning(sprintf(
-                    'Address validation cron: order #%s has no shipping address, skipping.',
-                    $order->getIncrementId()
+        foreach ($relevantOrders as $index => $relevantOrder) {
+            try {
+                $order = $this->orderRepository->get($relevantOrder['entity_id']);
+                $this->processOrder($order);
+            } catch (EnderecoApiUnavailableException $exception) {
+                // Unlike a per-order failure below, this isn't specific to the current
+                // order: a rejected key or a connection failure affects every remaining
+                // order in $relevantOrders identically, and won't resolve itself mid-run.
+                // Stop here instead of repeating (and logging) the same failure once per
+                // remaining order - they stay unprocessed and are picked up again next tick.
+                $remaining = count($relevantOrders) - $index;
+                $this->logger->error(sprintf(
+                    'Address validation cron: %s - aborting this run, %d order(s) '
+                    . '(including entity_id %s) will be retried next tick.',
+                    $exception->getMessage(),
+                    $remaining,
+                    $relevantOrder['entity_id']
                 ));
-                continue;
+                break;
+            } catch (\Throwable $exception) {
+                // A failure processing one order (a save conflict, anything unexpected) must
+                // not take the rest of the batch down with it - otherwise a single problematic
+                // order blocks the queue on every following tick, since orders after it in
+                // $relevantOrders never get reached this run either.
+                $this->logger->error(sprintf(
+                    'Address validation cron: failed to process order entity_id %s, skipping: %s',
+                    $relevantOrder['entity_id'],
+                    $exception->getMessage()
+                ));
             }
+        }
+    }
 
-            $zipCode         = (string)$shippingAddress['postcode'];
-            $city            = (string)$shippingAddress['city'];
-            $countryCode     = (string)$shippingAddress['country_id'];
-            $streetFull      = (string)$shippingAddress['street'];
-            $regionId        = $shippingAddress->getRegionId() ? (int)$shippingAddress->getRegionId() : null;
-            $subdivisionCode = $this->regionResolver->getSubdivisionCode($regionId);
+    /**
+     * @throws AlreadyExistsException
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     * @throws InputException
+     */
+    private function processOrder($order): void
+    {
+        $shippingAddress = $order->getShippingAddress();
 
-            $bodyStreetSplitter = json_encode([
+        if ($shippingAddress === null) {
+            // Should be excluded by getRelevantOrders()'s is_virtual filter already;
+            // this is a safety net for any other reason an order might lack a shipping
+            // address. Skipping without recording anything means it would be picked up
+            // again next tick and log again - acceptable, since this is expected to be rare.
+            $this->logger->warning(sprintf(
+                'Address validation cron: order #%s has no shipping address, skipping.',
+                $order->getIncrementId()
+            ));
+            return;
+        }
+
+        $zipCode         = (string)$shippingAddress['postcode'];
+        $city            = (string)$shippingAddress['city'];
+        $countryCode     = (string)$shippingAddress['country_id'];
+        $streetFull      = (string)$shippingAddress['street'];
+        $regionId        = $shippingAddress->getRegionId() ? (int)$shippingAddress->getRegionId() : null;
+        $subdivisionCode = $this->regionResolver->getSubdivisionCode($regionId);
+
+        $bodyStreetSplitter = json_encode([
+            'jsonrpc' => '2.0',
+            'id'      => 1,
+            'method'  => 'splitStreet',
+            'params'  => [
+                'formatCountry' => $countryCode,
+                'language'      => $countryCode,
+                'street'        => $streetFull,
+                'additionalInfo' => '',
+            ],
+        ]);
+
+        $responseStreetSplitter = $this->enderecoApi->execute($bodyStreetSplitter);
+        if ($responseStreetSplitter) {
+            $responseArrayStreetSplitter = json_decode($responseStreetSplitter, true);
+            $splittedStreet              = $responseArrayStreetSplitter['result']['streetName'];
+            $splittedHouseNumber         = $responseArrayStreetSplitter['result']['houseNumber'];
+            $additionalInfo              = $responseArrayStreetSplitter['result']['additionalInfo'] ?? null;
+
+            $body = json_encode([
                 'jsonrpc' => '2.0',
                 'id'      => 1,
-                'method'  => 'splitStreet',
+                'method'  => 'addressCheck',
                 'params'  => [
-                    'formatCountry' => $countryCode,
-                    'language'      => $countryCode,
-                    'street'        => $streetFull,
-                    'additionalInfo' => '',
+                    'country'     => $countryCode,
+                    'language'    => $countryCode,
+                    'postCode'    => $zipCode,
+                    'cityName'    => $city,
+                    'street'      => $splittedStreet,
+                    'houseNumber' => $splittedHouseNumber,
+                    // Empty string, not omitted: like splitStreet's additionalInfo above,
+                    // the API only includes subdivisionCode in the response predictions
+                    // (and activates the subdivision_code_* status codes) when this key
+                    // is present in the request at all - confirmed against the live API.
+                    'subdivisionCode' => '',
                 ],
             ]);
 
-            $responseStreetSplitter = $this->enderecoApi->execute($bodyStreetSplitter);
-            if ($responseStreetSplitter) {
-                $responseArrayStreetSplitter = json_decode($responseStreetSplitter, true);
-                $splittedStreet              = $responseArrayStreetSplitter['result']['streetName'];
-                $splittedHouseNumber         = $responseArrayStreetSplitter['result']['houseNumber'];
-                $additionalInfo              = $responseArrayStreetSplitter['result']['additionalInfo'] ?? null;
-
-                $body = json_encode([
-                    'jsonrpc' => '2.0',
-                    'id'      => 1,
-                    'method'  => 'addressCheck',
-                    'params'  => [
-                        'country'     => $countryCode,
-                        'language'    => $countryCode,
-                        'postCode'    => $zipCode,
-                        'cityName'    => $city,
-                        'street'      => $splittedStreet,
-                        'houseNumber' => $splittedHouseNumber,
-                        // Empty string, not omitted: like splitStreet's additionalInfo above,
-                        // the API only includes subdivisionCode in the response predictions
-                        // (and activates the subdivision_code_* status codes) when this key
-                        // is present in the request at all - confirmed against the live API.
-                        'subdivisionCode' => '',
-                    ],
-                ]);
-
-                $response = $this->enderecoApi->execute($body);
-                if ($response) {
-                    $response_array = json_decode($response, true);
-                    $foundAddresses = $response_array['result']['predictions'];
-                    $resultStatus   = $response_array['result']['status'];
-                    $criticalStatus = array_intersect($this->statusCodes, $resultStatus);
-                    $apiSubdivisionCode = $foundAddresses[0]['subdivisionCode'] ?? null;
-                    $apiRegionId        = $this->regionResolver->resolveRegionId($countryCode, $apiSubdivisionCode);
-                    // address needs to be reviewed because either
-                    // 1 -> response/status code is identified as critical
-                    // 2 -> it contains additional infos and the config is set to always check add. infos
-                    // 3 -> multiple addresses were found
-                    if (count($criticalStatus) > 0 ||
-                        ($additionalInfo && $this->checkAdditionalInfo == 1) ||
-                        count($foundAddresses) > 1) {
-                        // needs to be manually checked
-                        $this->setAddressValidationStatus($order);
-                    } elseif ($this->overwriteOriginal && count($foundAddresses) === 1) {
-                        // set validated address as orig. shipping address if configuration is enabled
-                        $shippingAddress
-                            ->setPostcode($foundAddresses[0]['postCode'])
-                            ->setCity($foundAddresses[0]['cityName'])
-                            ->setStreet($this->streetLineBuilder->build(
-                                $foundAddresses[0]['street'] ?? '',
-                                $foundAddresses[0]['houseNumber'] ?? '',
-                                $additionalInfo
-                            ));
-                        $this->regionResolver->applyRegion($shippingAddress, $apiRegionId);
-
-                        $order->addCommentToStatusHistory(__(
-                            'Original shipping address was overwritten with the validated address by the system (per module configuration).'
+            $response = $this->enderecoApi->execute($body);
+            if ($response) {
+                $response_array = json_decode($response, true);
+                $foundAddresses = $response_array['result']['predictions'];
+                $resultStatus   = $response_array['result']['status'];
+                $criticalStatus = array_intersect($this->statusCodes, $resultStatus);
+                $apiSubdivisionCode = $foundAddresses[0]['subdivisionCode'] ?? null;
+                $apiRegionId        = $this->regionResolver->resolveRegionId($countryCode, $apiSubdivisionCode);
+                // address needs to be reviewed because either
+                // 1 -> response/status code is identified as critical
+                // 2 -> it contains additional infos and the config is set to always check add. infos
+                // 3 -> multiple addresses were found
+                if (count($criticalStatus) > 0 ||
+                    ($additionalInfo && $this->checkAdditionalInfo == 1) ||
+                    count($foundAddresses) > 1) {
+                    // needs to be manually checked
+                    $this->setAddressValidationStatus($order);
+                } elseif ($this->overwriteOriginal && count($foundAddresses) === 1) {
+                    // set validated address as orig. shipping address if configuration is enabled
+                    $shippingAddress
+                        ->setPostcode($foundAddresses[0]['postCode'])
+                        ->setCity($foundAddresses[0]['cityName'])
+                        ->setStreet($this->streetLineBuilder->build(
+                            $foundAddresses[0]['street'] ?? '',
+                            $foundAddresses[0]['houseNumber'] ?? '',
+                            $additionalInfo
                         ));
+                    $this->regionResolver->applyRegion($shippingAddress, $apiRegionId);
 
-                        $this->orderRepository->save($order);
-                    } elseif ($this->overwriteOriginal && count($foundAddresses) === 0) {
-                        // Auto-overwrite is on, but the API returned no candidate at all - there is
-                        // nothing to write back (unlike the count()>1 case above, none of the
-                        // returned status codes need to be "critical" for this to happen; sharpness
-                        // config alone can't be relied on to catch it). Hold for manual review
-                        // instead of leaving the order to proceed with a wiped shipping address.
-                        $this->setAddressValidationStatus($order);
-                    }
-                    // save address as verified shipping address
-                    $verifiedAddress = $this->addressValidationFactory->create();
-                    $verifiedAddress->setOrderId($order->getEntityId())
-                                    ->setOrderIncrementId($order->getIncrementId())
-                                    ->setOrigZipCode($zipCode)
-                                    ->setOrigCity($city)
-                                    ->setOrigStreetFull($streetFull)
-                                    ->setOrigRegionId($regionId)
-                                    ->setOrigSubdivisionCode($subdivisionCode)
-                                    ->setApiZipCode($foundAddresses[0]['postCode'] ?? null)
-                                    ->setApiCity($foundAddresses[0]['cityName'] ?? null)
-                                    ->setApiStreet($foundAddresses[0]['street'] ?? null)
-                                    ->setApiHouseNumber($foundAddresses[0]['houseNumber'] ?? null)
-                                    ->setApiAdditionalInformation($additionalInfo)
-                                    ->setApiRegionId($apiRegionId)
-                                    ->setApiSubdivisionCode($apiSubdivisionCode)
-                                    ->setStatusCodes(implode(', ', $resultStatus));
-                    $this->addressValidationRepository->save($verifiedAddress);
-                } else {
-                    $this->setOrigData($order, $zipCode, $city, $streetFull, $regionId, $subdivisionCode);
+                    $order->addCommentToStatusHistory(__(
+                        'Original shipping address was overwritten with the validated address by the system (per module configuration).'
+                    ));
+
+                    $this->orderRepository->save($order);
+                } elseif ($this->overwriteOriginal && count($foundAddresses) === 0) {
+                    // Auto-overwrite is on, but the API returned no candidate at all - there is
+                    // nothing to write back (unlike the count()>1 case above, none of the
+                    // returned status codes need to be "critical" for this to happen; sharpness
+                    // config alone can't be relied on to catch it). Hold for manual review
+                    // instead of leaving the order to proceed with a wiped shipping address.
                     $this->setAddressValidationStatus($order);
                 }
+                // save address as verified shipping address
+                $verifiedAddress = $this->addressValidationFactory->create();
+                $verifiedAddress->setOrderId($order->getEntityId())
+                                ->setOrderIncrementId($order->getIncrementId())
+                                ->setOrigZipCode($zipCode)
+                                ->setOrigCity($city)
+                                ->setOrigStreetFull($streetFull)
+                                ->setOrigRegionId($regionId)
+                                ->setOrigSubdivisionCode($subdivisionCode)
+                                ->setApiZipCode($foundAddresses[0]['postCode'] ?? null)
+                                ->setApiCity($foundAddresses[0]['cityName'] ?? null)
+                                ->setApiStreet($foundAddresses[0]['street'] ?? null)
+                                ->setApiHouseNumber($foundAddresses[0]['houseNumber'] ?? null)
+                                ->setApiAdditionalInformation($additionalInfo)
+                                ->setApiRegionId($apiRegionId)
+                                ->setApiSubdivisionCode($apiSubdivisionCode)
+                                ->setStatusCodes(implode(', ', $resultStatus));
+                $this->addressValidationRepository->save($verifiedAddress);
             } else {
                 $this->setOrigData($order, $zipCode, $city, $streetFull, $regionId, $subdivisionCode);
                 $this->setAddressValidationStatus($order);
             }
+        } else {
+            $this->setOrigData($order, $zipCode, $city, $streetFull, $regionId, $subdivisionCode);
+            $this->setAddressValidationStatus($order);
         }
     }
 
