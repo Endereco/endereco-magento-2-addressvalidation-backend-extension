@@ -5,10 +5,10 @@ namespace Parc\AddressValidation\Service;
 
 use GuzzleHttp\ClientFactory;
 use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\Psr7\Response;
-use GuzzleHttp\Psr7\ResponseFactory;
+use GuzzleHttp\Exception\RequestException;
 use Magento\Framework\Webapi\Rest\Request;
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 
 class EnderecoApi
@@ -27,9 +27,12 @@ class EnderecoApi
     private const API_REQUEST_ENDPOINT = 'rpc/v1';
 
     /**
-     * @var ResponseFactory
+     * HTTP statuses observed for a rejected/invalid API key. Treated the same as a
+     * connection failure (see doRequest()): this is a problem with the API access
+     * itself, not with any particular order's address data, so it won't resolve
+     * itself for the next order either.
      */
-    private ResponseFactory $responseFactory;
+    private const AUTH_FAILURE_STATUSES = [401, 403, 421];
 
     /**
      * @var ClientFactory
@@ -55,18 +58,15 @@ class EnderecoApi
      * GitApiService constructor
      *
      * @param ClientFactory        $clientFactory
-     * @param ResponseFactory      $responseFactory
      * @param ScopeConfigInterface $scopeConfig
      * @param LoggerInterface      $logger
      */
     public function __construct(
         ClientFactory        $clientFactory,
-        ResponseFactory      $responseFactory,
         ScopeConfigInterface $scopeConfig,
         LoggerInterface      $logger
     ) {
         $this->clientFactory   = $clientFactory;
-        $this->responseFactory = $responseFactory;
         $this->scopeConfig     = $scopeConfig;
         $this->logger          = $logger;
 
@@ -100,9 +100,9 @@ class EnderecoApi
     /**
      * @param $body
      *
-     * @return Response
+     * @return ResponseInterface
      */
-    private function doRequest($body): Response
+    private function doRequest($body): ResponseInterface
     {
         $client = $this->clientFactory->create([
             'config' => [
@@ -127,10 +127,31 @@ class EnderecoApi
             $this->logger->warning('Endereco API request failed', [
                 'message' => $exception->getMessage(),
             ]);
-            $response = $this->responseFactory->create([
-                'status' => $exception->getCode(),
-                'reason' => $exception->getMessage()
-            ]);
+
+            $upstreamResponse = $exception instanceof RequestException ? $exception->getResponse() : null;
+
+            if ($upstreamResponse === null || in_array($upstreamResponse->getStatusCode(), self::AUTH_FAILURE_STATUSES, true)) {
+                // A rejected key or a connection failure isn't specific to this order's
+                // address data - every other order in the same run would fail the exact
+                // same way, and the underlying cause won't resolve itself mid-run. Let the
+                // caller decide to stop the whole batch instead of retrying (and failing)
+                // once per remaining order.
+                throw new EnderecoApiUnavailableException(
+                    $upstreamResponse !== null
+                        ? sprintf(
+                            'Endereco API rejected the request (HTTP %d %s)',
+                            $upstreamResponse->getStatusCode(),
+                            $upstreamResponse->getReasonPhrase()
+                        )
+                        : sprintf('Endereco API connection failed: %s', $exception->getMessage()),
+                    0,
+                    $exception
+                );
+            }
+
+            // Some other upstream error (e.g. a genuinely malformed request) - not treated
+            // as systemic, so let the caller's normal per-order handling deal with it.
+            $response = $upstreamResponse;
         }
 
         return $response;
