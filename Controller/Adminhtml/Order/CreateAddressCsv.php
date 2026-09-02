@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Parc\AddressValidation\Controller\Adminhtml\Order;
@@ -79,14 +80,14 @@ class CreateAddressCsv extends Action
      * @throws FileSystemException
      */
     public function __construct(
-        Context                $context,
-        Filter                 $filter,
+        Context $context,
+        Filter $filter,
         OrderCollectionFactory $orderCollectionFactory,
-        FileFactory            $fileFactory,
-        Csv                    $csvProcessor,
-        DirectoryList          $directoryList,
-        ScopeConfigInterface   $scopeConfig,
-        ResourceConnection     $resourceConnection
+        FileFactory $fileFactory,
+        Csv $csvProcessor,
+        DirectoryList $directoryList,
+        ScopeConfigInterface $scopeConfig,
+        ResourceConnection $resourceConnection
     ) {
         parent::__construct($context);
         $this->filter                 = $filter;

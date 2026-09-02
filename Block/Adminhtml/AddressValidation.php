@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Parc\AddressValidation\Block\Adminhtml;
@@ -43,10 +44,10 @@ class AddressValidation extends Template
      */
     public function __construct(
         AddressValidationRepository $addressValidationRepository,
-        FormKey                     $formKey,
-        RegionCollectionFactory     $regionCollectionFactory,
-        Context                     $context,
-        array                       $data = []
+        FormKey $formKey,
+        RegionCollectionFactory $regionCollectionFactory,
+        Context $context,
+        array $data = []
     ) {
         $this->addressValidationRepository = $addressValidationRepository;
         $this->formKey                     = $formKey;

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Parc\AddressValidation\Block\Adminhtml\Form\Field;
@@ -22,9 +23,9 @@ class ValueColumn extends Select
 
     public function __construct(
         ResourceConnection $resourceConnection,
-        Context            $context,
+        Context $context,
         ScopeConfigInterface $scopeConfig,
-        array              $data = []
+        array $data = []
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->scopeConfig = $scopeConfig;

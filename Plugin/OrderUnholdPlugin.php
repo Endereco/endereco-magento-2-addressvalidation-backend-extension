@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Parc\AddressValidation\Plugin;
@@ -63,13 +64,13 @@ class OrderUnholdPlugin
      * @param StreetLineBuilder           $streetLineBuilder
      */
     public function __construct(
-        OrderRepositoryInterface    $orderRepository,
-        ScopeConfigInterface        $scopeConfig,
-        BackendAuthSession          $authSession,
+        OrderRepositoryInterface $orderRepository,
+        ScopeConfigInterface $scopeConfig,
+        BackendAuthSession $authSession,
         AddressValidationRepository $addressValidationRepository,
-        ManagerInterface            $messageManager,
-        RegionResolver              $regionResolver,
-        StreetLineBuilder           $streetLineBuilder,
+        ManagerInterface $messageManager,
+        RegionResolver $regionResolver,
+        StreetLineBuilder $streetLineBuilder,
     ) {
         $this->orderRepository             = $orderRepository;
         $this->scopeConfig                 = $scopeConfig;
