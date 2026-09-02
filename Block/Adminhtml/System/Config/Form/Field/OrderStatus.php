@@ -1,4 +1,5 @@
 <?php
+
 namespace Parc\AddressValidation\Block\Adminhtml\System\Config\Form\Field;
 
 use Magento\Config\Block\System\Config\Form\Field;

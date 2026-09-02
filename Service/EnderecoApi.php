@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Parc\AddressValidation\Service;
@@ -62,9 +63,9 @@ class EnderecoApi
      * @param LoggerInterface      $logger
      */
     public function __construct(
-        ClientFactory        $clientFactory,
+        ClientFactory $clientFactory,
         ScopeConfigInterface $scopeConfig,
-        LoggerInterface      $logger
+        LoggerInterface $logger
     ) {
         $this->clientFactory   = $clientFactory;
         $this->scopeConfig     = $scopeConfig;

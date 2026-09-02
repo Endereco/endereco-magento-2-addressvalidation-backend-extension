@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Parc\AddressValidation\Controller\Adminhtml\Address;
@@ -65,14 +66,14 @@ class Save extends Action implements HttpPostActionInterface
      */
     public function __construct(
         AddressValidationRepository $addressValidationRepository,
-        ManagerInterface            $messageManager,
-        RedirectFactory             $resultRedirectFactory,
-        Context                     $context,
-        BackendAuthSession          $backendAuthSession,
-        OrderRepositoryInterface    $orderRepository,
-        RegionResolver              $regionResolver,
-        LoggerInterface             $logger,
-        StreetLineBuilder           $streetLineBuilder
+        ManagerInterface $messageManager,
+        RedirectFactory $resultRedirectFactory,
+        Context $context,
+        BackendAuthSession $backendAuthSession,
+        OrderRepositoryInterface $orderRepository,
+        RegionResolver $regionResolver,
+        LoggerInterface $logger,
+        StreetLineBuilder $streetLineBuilder
     ) {
         $this->addressValidationRepository = $addressValidationRepository;
         $this->messageManager              = $messageManager;

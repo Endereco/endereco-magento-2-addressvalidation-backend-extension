@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Parc\AddressValidation\Plugin;
@@ -22,8 +23,7 @@ class CronConfigPlugin
      */
     public function __construct(
         ScopeConfigInterface $scopeConfig,
-        LoggerInterface      $logger
-
+        LoggerInterface $logger
     ) {
         $this->scopeConfig = $scopeConfig;
         $this->logger      = $logger;

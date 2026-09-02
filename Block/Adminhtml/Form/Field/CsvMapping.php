@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Parc\AddressValidation\Block\Adminhtml\Form\Field;
 
 use Magento\Config\Block\System\Config\Form\Field\FieldArray\AbstractFieldArray;

@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Parc\AddressValidation\Block\Adminhtml\Order\View;
 
 use Magento\Backend\Block\Template\Context;
@@ -27,15 +29,15 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\View\Info
      * @param array                     $data
      */
     public function __construct(
-        CountryFactory            $countryFactory,
-        Context                   $context,
-        Registry                  $registry,
-        Admin                     $adminHelper,
-        GroupRepositoryInterface  $groupRepository,
+        CountryFactory $countryFactory,
+        Context $context,
+        Registry $registry,
+        Admin $adminHelper,
+        GroupRepositoryInterface $groupRepository,
         CustomerMetadataInterface $metadata,
-        ElementFactory            $elementFactory,
-        Renderer                  $addressRenderer,
-        array                     $data = []
+        ElementFactory $elementFactory,
+        Renderer $addressRenderer,
+        array $data = []
     ) {
         $this->_countryFactory = $countryFactory;
         parent::__construct(

@@ -1,8 +1,10 @@
 <?php
+
 /**
  * Copyright ©  All rights reserved.
  * See COPYING.txt for license details.
  */
+
 declare(strict_types=1);
 
 namespace Parc\AddressValidation\Model;
@@ -100,17 +102,17 @@ class AddressValidationRepository implements AddressValidationRepositoryInterfac
      * @param StreetLineBuilder                              $streetLineBuilder
      */
     public function __construct(
-        ResourceAddressValidation                      $resource,
-        AddressValidationInterfaceFactory              $addressValidationFactory,
-        AddressValidationCollectionFactory             $addressValidationCollectionFactory,
+        ResourceAddressValidation $resource,
+        AddressValidationInterfaceFactory $addressValidationFactory,
+        AddressValidationCollectionFactory $addressValidationCollectionFactory,
         AddressValidationSearchResultsInterfaceFactory $searchResultsFactory,
-        CollectionProcessorInterface                   $collectionProcessor,
-        CountryFactory                                 $countryFactory,
-        ScopeConfigInterface                           $scopeConfig,
-        OrderRepositoryInterface                       $orderRepository,
-        RegionResolver                                 $regionResolver,
-        LoggerInterface                                $logger,
-        StreetLineBuilder                              $streetLineBuilder
+        CollectionProcessorInterface $collectionProcessor,
+        CountryFactory $countryFactory,
+        ScopeConfigInterface $scopeConfig,
+        OrderRepositoryInterface $orderRepository,
+        RegionResolver $regionResolver,
+        LoggerInterface $logger,
+        StreetLineBuilder $streetLineBuilder
     ) {
         $this->resource                           = $resource;
         $this->addressValidationFactory           = $addressValidationFactory;

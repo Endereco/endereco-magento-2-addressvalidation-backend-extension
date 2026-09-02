@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Parc\AddressValidation\Cron;
@@ -103,17 +104,17 @@ class AddressValidation
      * @param StreetLineBuilder           $streetLineBuilder
      */
     public function __construct(
-        ResourceConnection          $resourceConnection,
-        OrderRepository             $orderRepository,
-        EnderecoApi                 $enderecoApi,
-        AddressValidationFactory    $addressValidationFactory,
-        CountryFactory              $countryFactory,
+        ResourceConnection $resourceConnection,
+        OrderRepository $orderRepository,
+        EnderecoApi $enderecoApi,
+        AddressValidationFactory $addressValidationFactory,
+        CountryFactory $countryFactory,
         AddressValidationRepository $addressValidationRepository,
-        ScopeConfigInterface        $scopeConfig,
-        LockManagerInterface        $lockManager,
-        LoggerInterface             $logger,
-        RegionResolver              $regionResolver,
-        StreetLineBuilder           $streetLineBuilder
+        ScopeConfigInterface $scopeConfig,
+        LockManagerInterface $lockManager,
+        LoggerInterface $logger,
+        RegionResolver $regionResolver,
+        StreetLineBuilder $streetLineBuilder
     ) {
         $this->resourceConnection          = $resourceConnection;
         $this->orderRepository             = $orderRepository;
@@ -271,9 +272,11 @@ class AddressValidation
                 // 1 -> response/status code is identified as critical
                 // 2 -> it contains additional infos and the config is set to always check add. infos
                 // 3 -> multiple addresses were found
-                if (count($criticalStatus) > 0 ||
+                if (
+                    count($criticalStatus) > 0 ||
                     ($additionalInfo && $this->checkAdditionalInfo == 1) ||
-                    count($foundAddresses) > 1) {
+                    count($foundAddresses) > 1
+                ) {
                     // needs to be manually checked
                     $this->setAddressValidationStatus($order);
                 } elseif ($this->overwriteOriginal && count($foundAddresses) === 1) {
