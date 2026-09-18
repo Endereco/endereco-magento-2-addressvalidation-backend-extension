@@ -37,54 +37,108 @@ This extension was developed in collaboration with [Parc Network](#) <!-- add UR
 
 ## Installation
 
+The extension is published on GitHub and released as a tagged version (`v1.0.0`). The
+recommended way to install it is via Composer, using the GitHub repository as a VCS
+repository. A manual installation from the release archive is also supported.
+
 > **Production note:** When running `setup:upgrade` on a live shop, add the `--keep-generated` flag:
 > ```bash
 > php bin/magento setup:upgrade --keep-generated
 > ```
 > Without this flag, Magento deletes and rebuilds all auto-generated code during the upgrade, which can cause a brief period of downtime for your customers. The flag keeps the existing generated code intact so the upgrade runs without interruption. On development or staging environments this flag is not needed.
 
-### Type 1: Zip file
+### Type 1: Composer (recommended)
 
-1. Unzip the zip file in `app/code/Parc`
-2. Enable the module:
+Run all commands from your Magento root directory.
+
+1. Register this GitHub repository as a Composer VCS repository:
+   ```bash
+   composer config repositories.endereco-addressvalidation-backend vcs https://github.com/Endereco/endereco-magento-2-addressvalidation-backend-extension.git
+   ```
+   > If the repository is private, Composer will ask for a GitHub token on the next step.
+   > You can also provide one upfront with
+   > `composer config --global --auth github-oauth.github.com <your-token>`.
+2. Require the module:
+   ```bash
+   composer require parc/module-addressvalidation:^1.0
+   ```
+   To pin an exact release instead, use the tag version, e.g.
+   `composer require parc/module-addressvalidation:1.0.0`.
+3. Enable the module:
    ```bash
    php bin/magento module:enable Parc_AddressValidation
    ```
-3. Apply database updates:
+4. Apply database updates:
    ```bash
    php bin/magento setup:upgrade
    ```
-4. Flush the cache:
+5. Compile and deploy (production mode only):
    ```bash
-   php bin/magento cache:flush
-   ```
-
-### Type 2: Composer
-
-1. Make the module available in a composer repository, for example:
-   - private repository `repo.magento.com`
-   - public repository `packagist.org`
-   - public GitHub repository as VCS
-2. Add the composer repository:
-   ```bash
-   composer config repositories.repo.magento.com composer https://repo.magento.com/
-   ```
-3. Install the module:
-   ```bash
-   composer require parc/module-addressvalidation
-   ```
-4. Enable the module:
-   ```bash
-   php bin/magento module:enable Parc_AddressValidation
-   ```
-5. Apply database updates:
-   ```bash
-   php bin/magento setup:upgrade
+   php bin/magento setup:di:compile
+   php bin/magento setup:static-content:deploy
    ```
 6. Flush the cache:
    ```bash
    php bin/magento cache:flush
    ```
+
+#### Updating
+
+```bash
+composer update parc/module-addressvalidation
+php bin/magento setup:upgrade
+php bin/magento cache:flush
+```
+
+#### Uninstalling
+
+```bash
+php bin/magento module:disable Parc_AddressValidation
+composer remove parc/module-addressvalidation
+php bin/magento setup:upgrade
+php bin/magento cache:flush
+```
+
+### Type 2: Manual installation from the release archive
+
+Use this if you cannot or do not want to use Composer.
+
+1. Download the source archive of the release you want from the
+   [Releases page](https://github.com/Endereco/endereco-magento-2-addressvalidation-backend-extension/releases)
+   (e.g. `v1.0.0`).
+2. Extract it and move the contents into `app/code/Parc/AddressValidation` in your Magento
+   root, so that `app/code/Parc/AddressValidation/registration.php` exists:
+   ```bash
+   mkdir -p app/code/Parc/AddressValidation
+   tar -xzf endereco-magento-2-addressvalidation-backend-extension-1.0.0.tar.gz \
+       --strip-components=1 -C app/code/Parc/AddressValidation
+   ```
+3. Enable the module:
+   ```bash
+   php bin/magento module:enable Parc_AddressValidation
+   ```
+4. Apply database updates:
+   ```bash
+   php bin/magento setup:upgrade
+   ```
+5. Compile and deploy (production mode only):
+   ```bash
+   php bin/magento setup:di:compile
+   php bin/magento setup:static-content:deploy
+   ```
+6. Flush the cache:
+   ```bash
+   php bin/magento cache:flush
+   ```
+
+### Verifying the installation
+
+```bash
+php bin/magento module:status Parc_AddressValidation
+```
+
+The module should be listed as enabled. Afterwards continue with
+[Configuration](#configuration).
 
 ---
 
