@@ -2,7 +2,7 @@
 
 Automatically validate shipping addresses on incoming orders using the Endereco API. Orders with problematic addresses are put on hold for validation, keeping your fulfillment clean and reducing failed deliveries.
 
-This extension was developed in collaboration with [Parc Network](#) <!-- add URL when available -->, a Magento agency supporting shops with Magento development and project delivery.
+This extension was developed in collaboration with [PARC Network](https://www.parc-network.de/), a Magento agency supporting shops with Magento development and project delivery.
 
 ---
 
