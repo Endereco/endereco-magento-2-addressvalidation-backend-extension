@@ -1,0 +1,30 @@
+# Keep the distributed package free of development-only artifacts.
+# Everything listed here is excluded from `git archive`, which is what GitHub
+# (and therefore Composer's dist download) uses to build the source archive.
+#
+# Note: this only takes effect for tags/commits that contain this file.
+
+# Git / repo metadata
+/.gitattributes         export-ignore
+/.gitignore             export-ignore
+
+# Local development environment
+/docker/                export-ignore
+
+# Developer shell scripts (playground.sh, fetch_shops.sh,
+# test_php_versions.sh, check_phpmd.sh, ...) — root level only
+/*.sh                   export-ignore
+
+# QA tooling: standalone composer manifests and tool configs.
+# `/composer-*.json` deliberately does not match `composer.json`.
+/composer-*.json        export-ignore
+/phpcs.xml              export-ignore
+/phpmd.xml              export-ignore
+/phpstan*.neon          export-ignore
+/phpunit.xml            export-ignore
+
+# Tests
+/Test/                  export-ignore
+
+# Contributor-facing documentation
+/CONTRIBUTING.md        export-ignore
