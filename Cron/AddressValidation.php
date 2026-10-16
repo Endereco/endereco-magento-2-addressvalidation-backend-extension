@@ -329,19 +329,31 @@ class AddressValidation
         }
     }
 
-    private function getRelevantOrders()
+    /**
+     * Orders in one of the configured statuses that have not been validated yet.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function getRelevantOrders(): array
     {
-        $formattedOrderStatus = "'" . implode("','", array_map('trim', explode(',', $this->orderStatus))) . "'";
-        // phpcs:disable
-        $sql = "SELECT entity_id FROM sales_order
-                WHERE entity_id NOT IN (
-                    SELECT order_id FROM parc_addressvalidation
-                )
-                AND status IN ($formattedOrderStatus)
-                AND is_virtual = 0";
+        $connection = $this->resourceConnection->getConnection();
+        $statuses   = array_values(array_filter(array_map('trim', explode(',', $this->orderStatus))));
 
-        // phpcs:enable
-        return $this->resourceConnection->getConnection()->fetchAll($sql);
+        $select = $connection->select()
+            ->from(['so' => $this->resourceConnection->getTableName('sales_order')], ['entity_id'])
+            // LEFT JOIN ... IS NULL instead of NOT IN (subselect): quote() wraps a
+            // Select in its own parentheses, so "NOT IN (?)" would render as
+            // "NOT IN ((SELECT ...))" and fail as soon as it returns several rows.
+            ->joinLeft(
+                ['pav' => $this->resourceConnection->getTableName('parc_addressvalidation')],
+                'pav.order_id = so.entity_id',
+                []
+            )
+            ->where('pav.order_id IS NULL')
+            ->where('so.status IN (?)', $statuses)
+            ->where('so.is_virtual = ?', 0);
+
+        return $connection->fetchAll($select);
     }
 
     /**
