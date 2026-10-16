@@ -13,6 +13,7 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Lock\LockManagerInterface;
 use Magento\Sales\Model\OrderRepository;
 use Parc\AddressValidation\Model\AddressValidationFactory;
+use Parc\AddressValidation\Model\Config\Backend\Enable;
 use Parc\AddressValidation\Model\RegionResolver;
 use Parc\AddressValidation\Model\StreetLineBuilder;
 use Parc\AddressValidation\Service\EnderecoApi;
@@ -33,6 +34,11 @@ class AddressValidation
     protected string $checkAdditionalInfo;
 
     protected string $validationStatus;
+
+    /**
+     * UTC "Y-m-d H:i:s"; only orders created at or after it are validated.
+     */
+    protected string $validationStart;
 
     /**
      * @var ResourceConnection
@@ -135,6 +141,7 @@ class AddressValidation
             (string)$this->scopeConfig->getValue('parc_addressvalidation/sharpness/statuscodes')
         ));
         $this->checkAdditionalInfo = (string)$this->scopeConfig->getValue('parc_addressvalidation/sharpness/additional_info');
+        $this->validationStart     = (string)$this->scopeConfig->getValue(Enable::XML_PATH_VALIDATION_START);
     }
 
     public function execute(): void
@@ -153,7 +160,9 @@ class AddressValidation
 
     private function doExecute(): void
     {
-        if (!$this->orderStatus || !$this->statusCodes) {
+        // Without a validation start (normally set when the module is first
+        // enabled) validate nothing rather than every existing order.
+        if (!$this->orderStatus || !$this->statusCodes || !$this->validationStart) {
             return;
         }
 
@@ -330,7 +339,8 @@ class AddressValidation
     }
 
     /**
-     * Orders in one of the configured statuses that have not been validated yet.
+     * Orders in one of the configured statuses, placed at or after the validation
+     * start and not validated yet.
      *
      * @return array<int, array<string, mixed>>
      */
@@ -351,7 +361,9 @@ class AddressValidation
             )
             ->where('pav.order_id IS NULL')
             ->where('so.status IN (?)', $statuses)
-            ->where('so.is_virtual = ?', 0);
+            ->where('so.is_virtual = ?', 0)
+            // Both values are UTC "Y-m-d H:i:s", so they compare directly.
+            ->where('so.created_at >= ?', $this->validationStart);
 
         return $connection->fetchAll($select);
     }

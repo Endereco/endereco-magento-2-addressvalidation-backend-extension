@@ -29,3 +29,6 @@
 "The original shipping address was successfully restored.","L'adresse d'expédition originale a été restaurée avec succès."
 "If activated the original shipping address is overwritten by the validated address.","Si cette option est activée, l'adresse d'expédition originale est remplacée par l'adresse validée."
 "Overwrite orig. shipping address","Remplacer l'adresse d'expédition originale"
+"Validation Start","Début de la validation"
+"Set automatically the first time the module is enabled. Only orders placed from this point on are validated; older orders are never touched.","Défini automatiquement lors de la première activation du module. Seules les commandes passées à partir de ce moment sont validées ; les commandes plus anciennes ne sont jamais modifiées."
+"Not set yet","Pas encore défini"

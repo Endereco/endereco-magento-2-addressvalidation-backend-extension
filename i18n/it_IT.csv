@@ -29,3 +29,6 @@
 "The original shipping address was successfully restored.","L'indirizzo di spedizione originale è stato ripristinato con successo."
 "If activated the original shipping address is overwritten by the validated address.","Se attivato, l'indirizzo di spedizione originale viene sovrascritto dall'indirizzo convalidato."
 "Overwrite orig. shipping address","Sovrascrivere l'indirizzo di spedizione originale"
+"Validation Start","Inizio della validazione"
+"Set automatically the first time the module is enabled. Only orders placed from this point on are validated; older orders are never touched.","Impostato automaticamente alla prima attivazione del modulo. Vengono validati solo gli ordini effettuati a partire da questo momento; gli ordini precedenti non vengono mai modificati."
+"Not set yet","Non ancora impostato"

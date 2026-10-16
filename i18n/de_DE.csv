@@ -37,3 +37,6 @@
 "Order was resumed by %1 and the validated address was set as shipping address (due to module config value)","Bestellung wurde von %1 fortgesetzt und die validierte Adresse als Lieferadresse gesetzt (gemäß Modulkonfiguration)."
 "An error occurred while saving the validated address as shipping address.","Beim Speichern der validierten Adresse als Lieferadresse ist ein Fehler aufgetreten."
 "Invalid validated-address column ""%1"".","Ungültige Validierungs-Adressspalte ""%1""."
+"Validation Start","Prüfbeginn"
+"Set automatically the first time the module is enabled. Only orders placed from this point on are validated; older orders are never touched.","Wird beim ersten Aktivieren des Moduls automatisch gesetzt. Geprüft werden nur Bestellungen ab diesem Zeitpunkt, ältere Bestellungen bleiben unberührt."
+"Not set yet","Noch nicht gesetzt"
