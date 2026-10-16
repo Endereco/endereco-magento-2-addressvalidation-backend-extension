@@ -62,6 +62,9 @@
             "rm -rf vendor",
             "COMPOSER=composer-phpstan.json composer install --prefer-dist --no-progress --no-interaction --quiet",
             "@phpstan",
+            "rm -rf vendor",
+            "COMPOSER=composer-phpunit.json composer install --prefer-dist --no-progress --no-interaction --quiet",
+            "@test",
             "@phpcompat"
         ],
         "post-install-cmd": [
