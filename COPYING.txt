@@ -1,4 +1,4 @@
-Copyright © 2024-present 
+Copyright © 2024-present Endereco UG (haftungsbeschränkt)
 
 This file is part of Parc/AddressValidation.
 
