@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright ©  All rights reserved.
+ * Copyright © 2024-present Endereco UG (haftungsbeschränkt)
  * See COPYING.txt for license details.
  */
 declare(strict_types=1);
