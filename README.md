@@ -60,10 +60,10 @@ Run all commands from your Magento root directory.
    > `composer config --global --auth github-oauth.github.com <your-token>`.
 2. Require the module:
    ```bash
-   composer require parc/module-addressvalidation:^1.0
+   composer require endereco/magento2-address-validation-backend:^1.0
    ```
    To pin an exact release instead, use the tag version, e.g.
-   `composer require parc/module-addressvalidation:1.0.0`.
+   `composer require endereco/magento2-address-validation-backend:1.0.1`.
 3. Enable the module:
    ```bash
    php bin/magento module:enable Parc_AddressValidation
@@ -85,16 +85,36 @@ Run all commands from your Magento root directory.
 #### Updating
 
 ```bash
-composer update parc/module-addressvalidation
+composer update endereco/magento2-address-validation-backend
 php bin/magento setup:upgrade
 php bin/magento cache:flush
 ```
+
+#### Switching from `parc/module-addressvalidation`
+
+The package used to be called `parc/module-addressvalidation`. This repository now
+provides it only as `endereco/magento2-address-validation-backend`, so on an existing
+installation `composer update` fails with "found parc/module-addressvalidation[...] in
+the lock file but not in remote repositories".
+
+Switch the package once. The Magento module itself (`Parc_AddressValidation`) is
+unchanged, so the configuration and the validation history are kept:
+
+```bash
+composer remove parc/module-addressvalidation --no-update
+composer require endereco/magento2-address-validation-backend:^1.0
+php bin/magento setup:upgrade
+php bin/magento cache:flush
+```
+
+Do not run `module:disable` for this switch: disabling the module and running
+`setup:upgrade` drops its database table, including the validation history.
 
 #### Uninstalling
 
 ```bash
 php bin/magento module:disable Parc_AddressValidation
-composer remove parc/module-addressvalidation
+composer remove endereco/magento2-address-validation-backend
 php bin/magento setup:upgrade
 php bin/magento cache:flush
 ```

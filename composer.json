@@ -1,14 +1,18 @@
 {
-    "name": "parc/module-addressvalidation",
+    "name": "endereco/magento2-address-validation-backend",
     "description": "Module for validating the address of all incoming orders via Endereco API",
     "type": "magento2-module",
     "license": "GPL-3.0",
+    "homepage": "https://www.endereco.de",
     "authors": [
         {
             "name": "Luisa Öchsner",
-            "email": "loechsner@artplants.eu"
+            "email": "hallo@parc-network.de"
         }
     ],
+    "support": {
+        "email": "support@endereco.de"
+    },
     "minimum-stability": "stable",
     "config": {
         "allow-plugins": {
@@ -29,6 +33,9 @@
         "magento/module-sales": "*",
         "magento/module-store": "*",
         "magento/module-ui": "*"
+    },
+    "replace": {
+        "parc/module-addressvalidation": "self.version"
     },
     "require-dev": {
         "phpunit/phpunit": "^10.0 || ^11.0"
