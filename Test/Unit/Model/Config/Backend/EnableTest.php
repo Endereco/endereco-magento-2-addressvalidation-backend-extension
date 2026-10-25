@@ -6,12 +6,12 @@ namespace Parc\AddressValidation\Test\Unit\Model\Config\Backend;
 use Magento\Framework\App\Cache\TypeListInterface;
 use Magento\Framework\App\CacheInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Framework\App\Config\Storage\WriterInterface;
 use Magento\Framework\Event\ManagerInterface as EventManagerInterface;
 use Magento\Framework\Model\Context;
 use Magento\Framework\Registry;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Parc\AddressValidation\Model\Config\Backend\Enable;
+use Parc\AddressValidation\Model\ValidationStart;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -20,21 +20,15 @@ class EnableTest extends TestCase
     private const NOW = '2026-10-16 09:30:00';
 
     /**
-     * @var ScopeConfigInterface&MockObject
+     * @var ValidationStart&MockObject
      */
-    private ScopeConfigInterface $scopeConfig;
-
-    /**
-     * @var WriterInterface&MockObject
-     */
-    private WriterInterface $configWriter;
+    private ValidationStart $validationStart;
 
     private Enable $model;
 
     protected function setUp(): void
     {
-        $this->scopeConfig  = $this->createMock(ScopeConfigInterface::class);
-        $this->configWriter = $this->createMock(WriterInterface::class);
+        $this->validationStart = $this->createMock(ValidationStart::class);
 
         $dateTime = $this->createMock(DateTime::class);
         $dateTime->method('gmtDate')->willReturn(self::NOW);
@@ -48,21 +42,19 @@ class EnableTest extends TestCase
         $this->model = new Enable(
             $context,
             $this->createMock(Registry::class),
-            $this->scopeConfig,
+            $this->createMock(ScopeConfigInterface::class),
             $this->createMock(TypeListInterface::class),
-            $this->configWriter,
+            $this->validationStart,
             $dateTime
         );
-        $this->model->setPath('parc_addressvalidation/general/enable');
+        $this->model->setPath(Enable::XML_PATH_ENABLE);
     }
 
     public function testFirstActivationSetsValidationStart(): void
     {
-        $this->givenStoredValidationStart(null);
+        $this->validationStart->method('get')->willReturn(null);
 
-        $this->configWriter->expects($this->once())
-            ->method('save')
-            ->with(Enable::XML_PATH_VALIDATION_START, self::NOW);
+        $this->validationStart->expects($this->once())->method('set')->with(self::NOW);
 
         $this->model->setValue('1')->afterSave();
     }
@@ -73,26 +65,19 @@ class EnableTest extends TestCase
      */
     public function testExistingValidationStartIsKept(): void
     {
-        $this->givenStoredValidationStart('2026-10-01 08:00:00');
+        $this->validationStart->method('get')->willReturn('2026-10-01 08:00:00');
 
-        $this->configWriter->expects($this->never())->method('save');
+        $this->validationStart->expects($this->never())->method('set');
 
         $this->model->setValue('1')->afterSave();
     }
 
     public function testSavingDisabledDoesNotSetValidationStart(): void
     {
-        $this->givenStoredValidationStart(null);
+        $this->validationStart->method('get')->willReturn(null);
 
-        $this->configWriter->expects($this->never())->method('save');
+        $this->validationStart->expects($this->never())->method('set');
 
         $this->model->setValue('0')->afterSave();
-    }
-
-    private function givenStoredValidationStart(?string $value): void
-    {
-        $this->scopeConfig->method('getValue')->willReturnCallback(
-            static fn (string $path) => $path === Enable::XML_PATH_VALIDATION_START ? $value : null
-        );
     }
 }
