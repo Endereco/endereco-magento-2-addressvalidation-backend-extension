@@ -11,11 +11,13 @@ use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Lock\LockManagerInterface;
+use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Sales\Model\OrderRepository;
 use Parc\AddressValidation\Model\AddressValidationFactory;
 use Parc\AddressValidation\Model\Config\Backend\Enable;
 use Parc\AddressValidation\Model\RegionResolver;
 use Parc\AddressValidation\Model\StreetLineBuilder;
+use Parc\AddressValidation\Model\ValidationStart;
 use Parc\AddressValidation\Service\EnderecoApi;
 use Parc\AddressValidation\Service\EnderecoApiUnavailableException;
 use Parc\AddressValidation\Model\AddressValidationRepository;
@@ -96,6 +98,16 @@ class AddressValidation
     protected StreetLineBuilder $streetLineBuilder;
 
     /**
+     * @var ValidationStart
+     */
+    protected ValidationStart $validationStartStorage;
+
+    /**
+     * @var DateTime
+     */
+    protected DateTime $dateTime;
+
+    /**
      * @param ResourceConnection          $resourceConnection
      * @param OrderRepository             $orderRepository
      * @param EnderecoApi                 $enderecoApi
@@ -107,6 +119,8 @@ class AddressValidation
      * @param LoggerInterface             $logger
      * @param RegionResolver              $regionResolver
      * @param StreetLineBuilder           $streetLineBuilder
+     * @param ValidationStart             $validationStartStorage
+     * @param DateTime                    $dateTime
      */
     public function __construct(
         ResourceConnection          $resourceConnection,
@@ -119,7 +133,9 @@ class AddressValidation
         LockManagerInterface        $lockManager,
         LoggerInterface             $logger,
         RegionResolver              $regionResolver,
-        StreetLineBuilder           $streetLineBuilder
+        StreetLineBuilder           $streetLineBuilder,
+        ValidationStart $validationStartStorage,
+        DateTime $dateTime
     ) {
         $this->resourceConnection          = $resourceConnection;
         $this->orderRepository             = $orderRepository;
@@ -132,6 +148,8 @@ class AddressValidation
         $this->logger                      = $logger;
         $this->regionResolver              = $regionResolver;
         $this->streetLineBuilder           = $streetLineBuilder;
+        $this->validationStartStorage      = $validationStartStorage;
+        $this->dateTime                    = $dateTime;
 
         $this->overwriteOriginal   = (string)$this->scopeConfig->getValue('parc_addressvalidation/general/overwriteoriginal');
         $this->orderStatus         = (string)$this->scopeConfig->getValue('parc_addressvalidation/general/orderstatus');
@@ -160,8 +178,10 @@ class AddressValidation
 
     private function doExecute(): void
     {
-        // Without a validation start (normally set when the module is first
-        // enabled) validate nothing rather than every existing order.
+        if (!$this->validationStart && $this->scopeConfig->isSetFlag(Enable::XML_PATH_ENABLE)) {
+            $this->initValidationStart();
+        }
+
         if (!$this->orderStatus || !$this->statusCodes || !$this->validationStart) {
             return;
         }
@@ -336,6 +356,32 @@ class AddressValidation
             $this->setOrigData($order, $zipCode, $city, $streetFull, $regionId, $subdivisionCode);
             $this->setAddressValidationStatus($order);
         }
+    }
+
+    /**
+     * Fallback for an active module without a validation start. Normally the
+     * first save of "Enable" or the update patch sets it; this covers the rest
+     * (e.g. "Enable" set in config.php/env.php, or the value deleted later), so
+     * validation starts now instead of silently never running. Older orders stay
+     * untouched either way.
+     */
+    private function initValidationStart(): void
+    {
+        // The config cache this class was built from can lag behind a start that
+        // was just written (e.g. by the update patch) - never overwrite that one.
+        $stored = $this->validationStartStorage->get();
+        if ($stored !== null) {
+            $this->validationStart = $stored;
+            return;
+        }
+
+        $this->validationStart = (string)$this->dateTime->gmtDate();
+        $this->validationStartStorage->set($this->validationStart);
+        $this->logger->info(sprintf(
+            'Address validation cron: no validation start was set; set it to %s (UTC). '
+            . 'Only orders placed from then on are validated.',
+            $this->validationStart
+        ));
     }
 
     /**
