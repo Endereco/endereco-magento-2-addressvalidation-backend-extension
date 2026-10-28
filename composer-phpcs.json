@@ -1,6 +1,6 @@
 {
-    "name": "parc/module-addressvalidation-phpcs",
-    "description": "PHPCS dependencies for parc/module-addressvalidation",
+    "name": "endereco/magento2-address-validation-backend-phpcs",
+    "description": "PHPCS dependencies for endereco/magento2-address-validation-backend",
     "type": "project",
     "license": "GPL-3.0",
     "prefer-stable": true,
