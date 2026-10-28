@@ -2,7 +2,7 @@
     "name": "parc/module-addressvalidation-phpunit",
     "description": "PHPUnit dependencies for parc/module-addressvalidation",
     "type": "project",
-    "license": "GPL-3.0",
+    "license": "GPL-3.0-or-later",
     "prefer-stable": true,
     "require": {
         "php": "^8.1",
