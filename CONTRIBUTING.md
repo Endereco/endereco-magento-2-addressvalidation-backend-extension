@@ -19,9 +19,11 @@ Every commit must meet these requirements:
 
 1. **Stable State**: Each commit should leave the codebase in a working, stable state.
 2. **Quality Assurance**: Run `composer run qa` — it must pass without errors. This runs
-   phpcs, phpmd, phpstan (all four Magento version configs) and the PHP version
-   compatibility check in sequence, each against its own isolated `vendor/` (see
-   `composer-phpcs.json`, `composer-phpmd.json`, `composer-phpstan.json`).
+   phpcs, phpmd, phpstan (all four Magento version configs), the unit tests and the PHP
+   version compatibility check in sequence, each against its own isolated `vendor/` (see
+   `composer-phpcs.json`, `composer-phpmd.json`, `composer-phpstan.json`,
+   `composer-phpunit.json`). Like phpstan, the unit tests take Magento's classes from
+   `shops/2.4.8` — run `composer run fetch-shops` once first.
 3. **Module Lifecycle**: `bin/magento module:enable Parc_AddressValidation` /
    `module:disable` followed by `setup:upgrade` must complete cleanly — the Magento
    equivalent of "installable and uninstallable."

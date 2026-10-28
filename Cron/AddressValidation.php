@@ -11,10 +11,13 @@ use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Lock\LockManagerInterface;
+use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Sales\Model\OrderRepository;
 use Parc\AddressValidation\Model\AddressValidationFactory;
+use Parc\AddressValidation\Model\Config\Backend\Enable;
 use Parc\AddressValidation\Model\RegionResolver;
 use Parc\AddressValidation\Model\StreetLineBuilder;
+use Parc\AddressValidation\Model\ValidationStart;
 use Parc\AddressValidation\Service\EnderecoApi;
 use Parc\AddressValidation\Service\EnderecoApiUnavailableException;
 use Parc\AddressValidation\Model\AddressValidationRepository;
@@ -33,6 +36,11 @@ class AddressValidation
     protected string $checkAdditionalInfo;
 
     protected string $validationStatus;
+
+    /**
+     * UTC "Y-m-d H:i:s"; only orders created at or after it are validated.
+     */
+    protected string $validationStart;
 
     /**
      * @var ResourceConnection
@@ -90,6 +98,16 @@ class AddressValidation
     protected StreetLineBuilder $streetLineBuilder;
 
     /**
+     * @var ValidationStart
+     */
+    protected ValidationStart $validationStartStorage;
+
+    /**
+     * @var DateTime
+     */
+    protected DateTime $dateTime;
+
+    /**
      * @param ResourceConnection          $resourceConnection
      * @param OrderRepository             $orderRepository
      * @param EnderecoApi                 $enderecoApi
@@ -101,6 +119,8 @@ class AddressValidation
      * @param LoggerInterface             $logger
      * @param RegionResolver              $regionResolver
      * @param StreetLineBuilder           $streetLineBuilder
+     * @param ValidationStart             $validationStartStorage
+     * @param DateTime                    $dateTime
      */
     public function __construct(
         ResourceConnection          $resourceConnection,
@@ -113,7 +133,9 @@ class AddressValidation
         LockManagerInterface        $lockManager,
         LoggerInterface             $logger,
         RegionResolver              $regionResolver,
-        StreetLineBuilder           $streetLineBuilder
+        StreetLineBuilder           $streetLineBuilder,
+        ValidationStart $validationStartStorage,
+        DateTime $dateTime
     ) {
         $this->resourceConnection          = $resourceConnection;
         $this->orderRepository             = $orderRepository;
@@ -126,6 +148,8 @@ class AddressValidation
         $this->logger                      = $logger;
         $this->regionResolver              = $regionResolver;
         $this->streetLineBuilder           = $streetLineBuilder;
+        $this->validationStartStorage      = $validationStartStorage;
+        $this->dateTime                    = $dateTime;
 
         $this->overwriteOriginal   = (string)$this->scopeConfig->getValue('parc_addressvalidation/general/overwriteoriginal');
         $this->orderStatus         = (string)$this->scopeConfig->getValue('parc_addressvalidation/general/orderstatus');
@@ -135,6 +159,7 @@ class AddressValidation
             (string)$this->scopeConfig->getValue('parc_addressvalidation/sharpness/statuscodes')
         ));
         $this->checkAdditionalInfo = (string)$this->scopeConfig->getValue('parc_addressvalidation/sharpness/additional_info');
+        $this->validationStart     = (string)$this->scopeConfig->getValue(Enable::XML_PATH_VALIDATION_START);
     }
 
     public function execute(): void
@@ -153,7 +178,11 @@ class AddressValidation
 
     private function doExecute(): void
     {
-        if (!$this->orderStatus || !$this->statusCodes) {
+        if (!$this->validationStart && $this->scopeConfig->isSetFlag(Enable::XML_PATH_ENABLE)) {
+            $this->initValidationStart();
+        }
+
+        if (!$this->orderStatus || !$this->statusCodes || !$this->validationStart) {
             return;
         }
 
@@ -329,19 +358,60 @@ class AddressValidation
         }
     }
 
-    private function getRelevantOrders()
+    /**
+     * Fallback for an active module without a validation start. Normally the
+     * first save of "Enable" or the update patch sets it; this covers the rest
+     * (e.g. "Enable" set in config.php/env.php, or the value deleted later), so
+     * validation starts now instead of silently never running. Older orders stay
+     * untouched either way.
+     */
+    private function initValidationStart(): void
     {
-        $formattedOrderStatus = "'" . implode("','", array_map('trim', explode(',', $this->orderStatus))) . "'";
-        // phpcs:disable
-        $sql = "SELECT entity_id FROM sales_order
-                WHERE entity_id NOT IN (
-                    SELECT order_id FROM parc_addressvalidation
-                )
-                AND status IN ($formattedOrderStatus)
-                AND is_virtual = 0";
+        // The config cache this class was built from can lag behind a start that
+        // was just written (e.g. by the update patch) - never overwrite that one.
+        $stored = $this->validationStartStorage->get();
+        if ($stored !== null) {
+            $this->validationStart = $stored;
+            return;
+        }
 
-        // phpcs:enable
-        return $this->resourceConnection->getConnection()->fetchAll($sql);
+        $this->validationStart = (string)$this->dateTime->gmtDate();
+        $this->validationStartStorage->set($this->validationStart);
+        $this->logger->info(sprintf(
+            'Address validation cron: no validation start was set; set it to %s (UTC). '
+            . 'Only orders placed from then on are validated.',
+            $this->validationStart
+        ));
+    }
+
+    /**
+     * Orders in one of the configured statuses, placed at or after the validation
+     * start and not validated yet.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function getRelevantOrders(): array
+    {
+        $connection = $this->resourceConnection->getConnection();
+        $statuses   = array_values(array_filter(array_map('trim', explode(',', $this->orderStatus))));
+
+        $select = $connection->select()
+            ->from(['so' => $this->resourceConnection->getTableName('sales_order')], ['entity_id'])
+            // LEFT JOIN ... IS NULL instead of NOT IN (subselect): quote() wraps a
+            // Select in its own parentheses, so "NOT IN (?)" would render as
+            // "NOT IN ((SELECT ...))" and fail as soon as it returns several rows.
+            ->joinLeft(
+                ['pav' => $this->resourceConnection->getTableName('parc_addressvalidation')],
+                'pav.order_id = so.entity_id',
+                []
+            )
+            ->where('pav.order_id IS NULL')
+            ->where('so.status IN (?)', $statuses)
+            ->where('so.is_virtual = ?', 0)
+            // Both values are UTC "Y-m-d H:i:s", so they compare directly.
+            ->where('so.created_at >= ?', $this->validationStart);
+
+        return $connection->fetchAll($select);
     }
 
     /**

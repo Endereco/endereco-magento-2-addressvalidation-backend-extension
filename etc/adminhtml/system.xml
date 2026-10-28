@@ -13,6 +13,12 @@
         <field id="enable" translate="label" type="select" sortOrder="10" showInDefault="1">
           <label>Enable</label>
           <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+          <backend_model>Parc\AddressValidation\Model\Config\Backend\Enable</backend_model>
+        </field>
+        <field id="validation_start" translate="label comment" type="label" sortOrder="15" showInDefault="1">
+          <label>Validation Start</label>
+          <comment>Set automatically the first time the module is enabled. Only orders placed from this point on are validated; older orders are never touched.</comment>
+          <frontend_model>Parc\AddressValidation\Block\Adminhtml\System\Config\Form\Field\ValidationStart</frontend_model>
         </field>
         <field id="api_key" translate="label" type="text" sortOrder="20" showInDefault="1">
           <label>API Key</label>
