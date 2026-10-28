@@ -5,11 +5,11 @@ namespace Parc\AddressValidation\Plugin;
 
 use Magento\Cron\Model\Config;
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Parc\AddressValidation\Model\Config\Backend\Enable;
 use Psr\Log\LoggerInterface;
 
 class CronConfigPlugin
 {
-    private const XML_PATH_ENABLE = 'parc_addressvalidation/general/enable';
     private const XML_PATH_CRON_EXPRESSION = 'parc_addressvalidation/general/cronschedule';
 
     protected ScopeConfigInterface $scopeConfig;
@@ -38,7 +38,7 @@ class CronConfigPlugin
 
         // Check if module is enabled (config is declared default-scope only,
         // and cron has no store context anyway)
-        $isEnabled = $this->scopeConfig->isSetFlag(self::XML_PATH_ENABLE);
+        $isEnabled = $this->scopeConfig->isSetFlag(Enable::XML_PATH_ENABLE);
 
         if (!$isEnabled) {
             unset($result['parcnetwork']['parc_addressvalidation']);
