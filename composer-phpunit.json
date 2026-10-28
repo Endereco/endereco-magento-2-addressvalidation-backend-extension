@@ -1,6 +1,6 @@
 {
-    "name": "parc/module-addressvalidation-phpunit",
-    "description": "PHPUnit dependencies for parc/module-addressvalidation",
+    "name": "endereco/magento2-address-validation-backend-phpunit",
+    "description": "PHPUnit dependencies for endereco/magento2-address-validation-backend",
     "type": "project",
     "license": "GPL-3.0-or-later",
     "prefer-stable": true,
