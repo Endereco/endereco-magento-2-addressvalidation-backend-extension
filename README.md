@@ -18,12 +18,26 @@ This extension was developed in collaboration with [PARC Network](https://www.pa
 
 ## How It Works
 
-1. A scheduled job (cron) checks new orders in your configured order status.
+1. A scheduled job (cron) checks orders in your configured order status that were placed after the validation start (see below).
 2. Each shipping address is sent to the Endereco API for validation.
 3. Based on the result, the extension either:
    - **Puts the order on hold for validation** (if the address is ambiguous, has address additions, or returns a critical status), or
    - **Automatically corrects the address** (if the result is unambiguous and auto-overwrite is enabled).
 4. All results are saved in the database — original address, API suggestion, and any manual correction.
+
+### Validation start
+
+Only orders placed after the module was first enabled are validated. Orders that already
+existed are never touched: no hold, no address change, no API call. The time is recorded
+automatically when **Enabled** is first saved as *Yes* and is shown read-only as
+**Validation Start** in the configuration. Disabling and re-enabling the module keeps it.
+
+When updating from version 1.0.0, which did not record this time yet, `setup:upgrade`
+sets it to when the module was originally enabled (derived from the configuration and the
+first validated order), so there is no need to save the configuration again. If the module
+is active but no validation start is set (e.g. *Enabled* comes from `app/etc/config.php`
+or `env.php`), the next cron run sets it to the current time and logs this to
+`var/log/system.log`.
 
 ---
 
@@ -37,15 +51,17 @@ This extension was developed in collaboration with [PARC Network](https://www.pa
 
 ## Installation
 
-The extension is published on GitHub and released as a tagged version (`v1.0.0`). The
+The extension is published on GitHub and released as tagged versions (e.g. `v1.1.0`). The
 recommended way to install it is via Composer, using the GitHub repository as a VCS
 repository. A manual installation from the release archive is also supported.
 
-> **Production note:** When running `setup:upgrade` on a live shop, add the `--keep-generated` flag:
+> **Production note:** When running `setup:upgrade` on a live shop in production mode, add the `--keep-generated` flag:
 > ```bash
 > php bin/magento setup:upgrade --keep-generated
 > ```
-> Without this flag, Magento deletes and rebuilds all auto-generated code during the upgrade, which can cause a brief period of downtime for your customers. The flag keeps the existing generated code intact so the upgrade runs without interruption. On development or staging environments this flag is not needed.
+> Without this flag, Magento deletes all auto-generated code during the upgrade, which can cause a brief period of downtime for your customers until it is compiled again. The flag keeps the existing generated code intact so the shop keeps running during the upgrade. **Always run `setup:di:compile` afterwards:** the kept code belongs to the previous version, and if a release changes a class constructor, the shop fails until it is recompiled.
+>
+> In default or developer mode, do not use the flag: Magento regenerates the code on demand there, but only if the old one has been removed.
 
 ### Type 1: Composer (recommended)
 
@@ -63,7 +79,7 @@ Run all commands from your Magento root directory.
    composer require endereco/magento2-address-validation-backend:^1.0
    ```
    To pin an exact release instead, use the tag version, e.g.
-   `composer require endereco/magento2-address-validation-backend:1.0.1`.
+   `composer require endereco/magento2-address-validation-backend:1.1.0`.
 3. Enable the module:
    ```bash
    php bin/magento module:enable Parc_AddressValidation
@@ -87,6 +103,17 @@ Run all commands from your Magento root directory.
 ```bash
 composer update endereco/magento2-address-validation-backend
 php bin/magento setup:upgrade
+php bin/magento cache:flush
+```
+
+In production mode, use `setup:upgrade --keep-generated` (see the production note above)
+and compile and deploy before flushing the cache:
+
+```bash
+composer update endereco/magento2-address-validation-backend
+php bin/magento setup:upgrade --keep-generated
+php bin/magento setup:di:compile
+php bin/magento setup:static-content:deploy
 php bin/magento cache:flush
 ```
 
@@ -125,12 +152,12 @@ Use this if you cannot or do not want to use Composer.
 
 1. Download the source archive of the release you want from the
    [Releases page](https://github.com/Endereco/endereco-magento-2-addressvalidation-backend-extension/releases)
-   (e.g. `v1.0.0`).
+   (e.g. `v1.1.0`).
 2. Extract it and move the contents into `app/code/Parc/AddressValidation` in your Magento
    root, so that `app/code/Parc/AddressValidation/registration.php` exists:
    ```bash
    mkdir -p app/code/Parc/AddressValidation
-   tar -xzf endereco-magento-2-addressvalidation-backend-extension-1.0.0.tar.gz \
+   tar -xzf endereco-magento-2-addressvalidation-backend-extension-1.1.0.tar.gz \
        --strip-components=1 -C app/code/Parc/AddressValidation
    ```
 3. Enable the module:
@@ -169,6 +196,7 @@ Go to **Stores → Configuration → endereco Backend Address Validation → Add
 | Setting | Description |
 |---|---|
 | **Enabled** | Turn the module on or off. |
+| **Validation Start** | Read-only. Only orders placed from this time on are validated; set automatically when the module is first enabled (see [Validation start](#validation-start)). |
 | **API Key** | Your Endereco API key. |
 | **Cron Schedule** | How often the validation job runs (default: `*/10 * * * *` = every 10 minutes). Make sure the interval is long enough for one run to finish before the next starts — see [Cron Schedule and Parallel Runs](#cron-schedule-and-parallel-runs). |
 | **Order Status** | Which order statuses should be picked up for validation. Select the statuses that fit your shop's order workflow — typically the status where new orders land before fulfillment begins. Common choices are `Pending` or `Processing`. Multiple statuses can be selected. |
@@ -447,6 +475,7 @@ To estimate a safe interval, check how long recent runs take in **System → Act
 - Check that the module is enabled under **Stores → Configuration → endereco Backend Address Validation → Address Validation**.
 - Verify your API key is correct.
 - Make sure the orders are in the status configured under "Order Status to Validate".
+- Orders placed before the **Validation Start** shown in the configuration are skipped on purpose.
 - Check that cron is running on your server (ask your hosting provider if unsure).
 
 **All orders are being put on hold for validation.**
